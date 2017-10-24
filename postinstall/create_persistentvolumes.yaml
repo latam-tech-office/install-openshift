@@ -1,0 +1,232 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Setup a Persistence Volume (PV) on Server{{ ':' }} {{ nfs_server }} at {{ nfs_path_prefix }} 
+  hosts: localhost
+  connection: local
+  vars:
+    persistent_volumes:
+       - { pv_index: 1, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 2, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 3, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 4, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 5, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 6, "type": "small",   pv_size: 5 }
+       - { pv_index: 7, "type": "small",   pv_size: 5 }
+       - { pv_index: 8, "type": "small",   pv_size: 5 }
+       - { pv_index: 9, "type": "small",   pv_size: 5 }
+       - { pv_index: 10, "type": "small",   pv_size: 5 }
+       - { pv_index: 11, "type": "regular", pv_size: 10 }
+       - { pv_index: 12, "type": "regular", pv_size: 10 }
+       - { pv_index: 13, "type": "regular", pv_size: 10 }
+       - { pv_index: 14, "type": "regular", pv_size: 10 }
+       - { pv_index: 15, "type": "regular", pv_size: 10 }
+       - { pv_index: 16, "type": "big",     pv_size: 20 }
+       - { pv_index: 17, "type": "big",     pv_size: 20 }
+       - { pv_index: 18, "type": "big",     pv_size: 20 }
+       - { pv_index: 19, "type": "big",     pv_size: 20 }
+       - { pv_index: 20, "type": "big",     pv_size: 20 }
+       - { pv_index: 21, "type": "large",   pv_size: 25 }
+       - { pv_index: 22, "type": "large",   pv_size: 25 }
+       - { pv_index: 23, "type": "large",   pv_size: 25 }
+       - { pv_index: 24, "type": "large",   pv_size: 25 }
+       - { pv_index: 25, "type": "large",   pv_size: 25 }
+       - { pv_index: 26, "type": "huge",   pv_size: 50 }
+       - { pv_index: 27, "type": "huge",   pv_size: 50 }
+       - { pv_index: 28, "type": "huge",   pv_size: 50 }
+       - { pv_index: 29, "type": "huge",   pv_size: 50 }
+       - { pv_index: 30, "type": "huge",   pv_size: 50 }
+       - { pv_index: 31, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 32, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 33, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 34, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 35, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 36, "type": "small",   pv_size: 5 }
+       - { pv_index: 37, "type": "small",   pv_size: 5 }
+       - { pv_index: 38, "type": "small",   pv_size: 5 }
+       - { pv_index: 39, "type": "small",   pv_size: 5 }
+       - { pv_index: 40, "type": "small",   pv_size: 5 }
+       - { pv_index: 41, "type": "regular", pv_size: 10 }
+       - { pv_index: 42, "type": "regular", pv_size: 10 }
+       - { pv_index: 43, "type": "regular", pv_size: 10 }
+       - { pv_index: 44, "type": "regular", pv_size: 10 }
+       - { pv_index: 45, "type": "regular", pv_size: 10 }
+       - { pv_index: 46, "type": "big",     pv_size: 20 }
+       - { pv_index: 47, "type": "big",     pv_size: 20 }
+       - { pv_index: 48, "type": "big",     pv_size: 20 }
+       - { pv_index: 49, "type": "big",     pv_size: 20 }
+       - { pv_index: 50, "type": "big",     pv_size: 20 }
+       - { pv_index: 51, "type": "large",   pv_size: 25 }
+       - { pv_index: 52, "type": "large",   pv_size: 25 }
+       - { pv_index: 53, "type": "large",   pv_size: 25 }
+       - { pv_index: 54, "type": "large",   pv_size: 25 }
+       - { pv_index: 55, "type": "large",   pv_size: 25 }
+       - { pv_index: 56, "type": "huge",   pv_size: 50 }
+       - { pv_index: 57, "type": "huge",   pv_size: 50 }
+       - { pv_index: 58, "type": "huge",   pv_size: 50 }
+       - { pv_index: 59, "type": "huge",   pv_size: 50 }
+       - { pv_index: 60, "type": "huge",   pv_size: 50 }
+       - { pv_index: 61, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 62, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 63, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 64, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 65, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 66, "type": "small",   pv_size: 5 }
+       - { pv_index: 67, "type": "small",   pv_size: 5 }
+       - { pv_index: 68, "type": "small",   pv_size: 5 }
+       - { pv_index: 69, "type": "small",   pv_size: 5 }
+       - { pv_index: 70, "type": "small",   pv_size: 5 }
+       - { pv_index: 71, "type": "regular", pv_size: 10 }
+       - { pv_index: 72, "type": "regular", pv_size: 10 }
+       - { pv_index: 73, "type": "regular", pv_size: 10 }
+       - { pv_index: 74, "type": "regular", pv_size: 10 }
+       - { pv_index: 75, "type": "regular", pv_size: 10 }
+       - { pv_index: 76, "type": "big",     pv_size: 20 }
+       - { pv_index: 77, "type": "big",     pv_size: 20 }
+       - { pv_index: 78, "type": "big",     pv_size: 20 }
+       - { pv_index: 79, "type": "big",     pv_size: 20 }
+       - { pv_index: 80, "type": "big",     pv_size: 20 }
+       - { pv_index: 81, "type": "large",   pv_size: 25 }
+       - { pv_index: 82, "type": "large",   pv_size: 25 }
+       - { pv_index: 83, "type": "large",   pv_size: 25 }
+       - { pv_index: 84, "type": "large",   pv_size: 25 }
+       - { pv_index: 85, "type": "large",   pv_size: 25 }
+       - { pv_index: 86, "type": "huge",   pv_size: 50 }
+       - { pv_index: 87, "type": "huge",   pv_size: 50 }
+       - { pv_index: 88, "type": "huge",   pv_size: 50 }
+       - { pv_index: 89, "type": "huge",   pv_size: 50 }
+       - { pv_index: 80, "type": "huge",   pv_size: 50 }
+       - { pv_index: 81, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 82, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 83, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 84, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 85, "type": "tiny",    pv_size: 1 }
+       - { pv_index: 86, "type": "small",   pv_size: 5 }
+       - { pv_index: 87, "type": "small",   pv_size: 5 }
+       - { pv_index: 88, "type": "small",   pv_size: 5 }
+       - { pv_index: 89, "type": "small",   pv_size: 5 }
+       - { pv_index: 90, "type": "small",   pv_size: 5 }
+       - { pv_index: 91, "type": "regular", pv_size: 10 }
+       - { pv_index: 92, "type": "regular", pv_size: 10 }
+       - { pv_index: 93, "type": "regular", pv_size: 10 }
+       - { pv_index: 94, "type": "regular", pv_size: 10 }
+       - { pv_index: 95, "type": "regular", pv_size: 10 }
+       - { pv_index: 96, "type": "big",     pv_size: 20 }
+       - { pv_index: 97, "type": "big",     pv_size: 20 }
+       - { pv_index: 98, "type": "big",     pv_size: 20 }
+       - { pv_index: 99, "type": "big",     pv_size: 20 }
+       - { pv_index: 100, "type": "big",     pv_size: 20 }
+       - { pv_index: 101, "type": "large",   pv_size: 25 }
+       - { pv_index: 102, "type": "large",   pv_size: 25 }
+       - { pv_index: 103, "type": "large",   pv_size: 25 }
+       - { pv_index: 104, "type": "large",   pv_size: 25 }
+       - { pv_index: 105, "type": "large",   pv_size: 25 }
+       - { pv_index: 106, "type": "huge",   pv_size: 50 }
+       - { pv_index: 107, "type": "huge",   pv_size: 50 }
+       - { pv_index: 108, "type": "huge",   pv_size: 50 }
+       - { pv_index: 109, "type": "huge",   pv_size: 50 }
+       - { pv_index: 110, "type": "huge",   pv_size: 50 }
+    nfs_server: 192.168.0.100
+    nfs_path_prefix: /var/storage/local
+  tasks:
+    - name: Create directory for NFS Exports
+      file: path={{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
+      with_items: "{{ persistent_volumes }}"
+      tags:
+         - create
+
+    - name: Create directory for NFS Exports{{ ':' }} RHMAP/gitlab-shell based on https{{ ':' }}//access.redhat.com/solutions/2919671
+      file: path={{ nfs_path_prefix }}-gitlab-shell group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
+      tags:
+         - create
+
+    - name: Create all the necessary information in /etc/exports
+      lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} *(rw,root_squash,no_wdelay)"
+      with_items: "{{ persistent_volumes }}"
+      tags:
+         - create
+
+    - name: Special custom taylored for RHMAP/gitlab-shell on /etc/exports{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
+      lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}-gitlab-shell *(rw,no_root_squash,no_wdelay)"
+      tags:
+         - create
+
+
+    - name: Add the following lines into the IPTables rules for NFS
+      lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line="{{ item }}"
+      with_items: 
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 111 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2049 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
+      tags: 
+         - iptables
+
+    - name: Restart IPTables Service
+      service: name=iptables state=restarted
+      notify: Restart IPTables Service
+      tags: 
+         - iptables
+
+    - name: Modify information into NFS file
+      lineinfile: dest=/etc/sysconfig/nfs state=present regexp={{ item.regex }} line={{ item.option }}
+      with_items:
+         - { regex: "^RPCMOUNTDOPTS", option: "RPCMOUNTDOPTS=\"-p 20048\""}
+         - { regex: "^STATDARG",      option: "STATDARG=\"-p 50825\""}
+      tags:
+         - nfs
+
+# Bug according to: https://access.redhat.com/solutions/2200331
+#    - name: Modify information on sysctl
+#      lineinfile: dest=/etc/sysctl.conf state=present line={{ item }}
+#      with_items:
+#         - "fs.nfs.nlm_tcpport=53248"
+#         - "fs.nfs.nlm_udpport=53248"
+#
+#    - name: Persist the changes for sysctl
+#      command: sysctl -p
+
+    - name: Restart all the necessary services related to NFS
+      service: name={{ item }}  state=restarted enabled=true
+      with_items:
+         - rpcbind
+         - nfs-server
+         - nfs-lock 
+         - nfs-idmap
+     
+    - name: Template all the necessary Persistent Volumes in a temporary directory
+      template: src=templates/persistentvolume.yaml.j2 dest=/tmp/persistentvolume.yaml
+      tags: 
+         - pv_yaml
+
+    - name: Template a Persisten Volume for Gitlab-Shell{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
+      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/tmp/persistentvolume-gitlab-shell.yaml
+      tags:
+         - pv_yaml 
+         - pv_yaml_gitlab
+
+    - name: Change to administrator user in OpenShift
+      command: oc login --username=system:admin
+      tags:
+         - pv_yaml
+
+    - name: Delete all existing PV's before creating
+      command: oc delete pv --all
+      ignore_errors: True
+      tags:
+         - pv_yaml
+
+    - name: Create the PV's from a temporary directory
+      command: oc create -f /tmp/persistentvolume.yaml
+      tags:
+         - pv_yaml
+
+    - name: Create PV for Gitlab Shell
+      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
+      tags:
+         - pv_yaml
+         - pv_yaml_gitlab
+
+  handlers:
+    - name: Restart IPTables Service
+      service: name=iptables state=restarted

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: local-gitlab-shell
+    labels: 
+       rhmap_core: gitlab-shell
+  spec:
+    capacity:
+      storage: 5Gi
+    accessModes:
+      - ReadWriteMany
+      - ReadWriteOnce
+    nfs:
+      server: {{ nfs_server }}
+      path: {{ nfs_path_prefix }}-gitlab-shell
+    persistentVolumeReclaimPolicy: Recycle

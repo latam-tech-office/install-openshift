@@ -1,0 +1,23 @@
+---
+- name: Performing operations just after an OpenShift's installation is done
+  hosts: localhost
+  connection: local
+  gather_facts: False 
+  tasks:
+     - name: Modify configuration in Master, so all Pods will be create in host=apps
+       lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "host=apps"'
+
+     - name: Restart OpenShift's Master
+       service: name=atomic-openshift-master state=restarted
+
+     - name: All pods in Project Default must run on Infra Host
+       command: oc patch namespace/default --patch '{"metadata"{{ ':' }} {"name"{{ ':' }} "default","annotations"{{ ':' }} {"openshift.io/node-selector"{{ ':' }} "host=infra"}}}'
+
+     - name: Recreate Pods in Project Default
+       command: oc delete pods --all --namespace default
+
+     - name: All pods in Project OpenShift INfra must run on Infra Host
+       command: oc patch namespace/openshift-infra --patch '{"metadata"{{ ':' }} {"name"{{ ':' }} "openshift-infra","annotations"{{ ':' }} {"openshift.io/node-selector"{{ ':' }} "host=infra"}}}'
+
+     - name: Recreate Pods in Project Openshift-Infra
+       command: oc delete pods --all --namespace openshift-infra
