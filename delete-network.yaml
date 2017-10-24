@@ -1,0 +1,64 @@
+---
+- name: Delete Networking for TestDrive
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - gce/authentication
+     - gce/defaults
+  vars:
+     openshift_firewall_rules:
+         - { name: "enable-ssh", allow: "tcp:22",          range: "0.0.0.0/0", tag: "enable-ssh" }
+         - { name: "master",     allow: "tcp:8443,9090",   range: "0.0.0.0/0", tag: "openshift-master" }
+         - { name: "infranode",  allow: "tcp:80,443,1936", range: "0.0.0.0/0", tag: "openshift-infra-node" }
+     openshift_firewall_rules_apply_to_all:
+         - { name: "internal-node-communication", range: "{{ subnetwork_range }}" }
+  tasks:
+    - include: commons/setting_defaults.yaml
+      tags:
+         - always
+
+    - name: Delete firewall rules for network{{ ':' }} {{ network_name }} (APPLY TO ALL)
+      gce_net:
+        name: "{{ network_name }}"
+        fwname: "{{ network_name }}-{{ item.name }}"
+        state: absent
+        project_id: "{{ gce_project_id }}"
+        credentials_file: "{{ gce_credentials_file }}"
+        service_account_email: "{{ gce_service_account_email }}"
+      with_items: "{{ openshift_firewall_rules_apply_to_all }}"
+
+    - name: Delete firewall rules for network{{ ':' }} {{ network_name }}
+      gce_net:
+        name: "{{ network_name }}"
+        fwname: "{{ network_name }}-{{ item.name }}"
+        state: absent
+        project_id: "{{ gce_project_id }}"
+        credentials_file: "{{ gce_credentials_file }}"
+        service_account_email: "{{ gce_service_account_email }}"
+      with_items: "{{ openshift_firewall_rules }}"
+
+    - name: Deleting Subnetwork created{{ ':' }} {{ subnetwork_name }}
+      gce_net:
+        name: "{{ network_name }}"
+        mode: custom
+        subnet_name: "{{ subnetwork_name }}"
+        subnet_region: "{{ region }}"
+        ipv4_range: "{{ subnetwork_range }}"
+        state: absent
+        project_id: "{{ gce_project_id }}"
+        credentials_file: "{{ gce_credentials_file }}"
+        service_account_email: "{{ gce_service_account_email }}"
+      tags:
+         - network
+
+    - name: Wait for Subnetwork deleting to settle down
+      pause: seconds=20
+
+    - name: Deleting Network created{{ ':' }} {{ network_name }}
+      gce_net:
+        name: "{{ network_name }}"
+        state: absent
+        project_id: "{{ gce_project_id }}"
+        credentials_file: "{{ gce_credentials_file }}"
+        service_account_email: "{{ gce_service_account_email }}"
