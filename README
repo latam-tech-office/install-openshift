@@ -1,0 +1,5 @@
+
+
+```
+ansible-playbook install_openshift.yaml -e redhat_subscription_username=<USERNAME> -e redhat_subscription_password=<PASSWORD> -e openshift_master_url=master.example.com -e openshift_cloudapps_url=cloudapps.example.com
+```
