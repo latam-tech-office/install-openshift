@@ -1,0 +1,6 @@
+pushd {{ rhmap_directory }}
+ansible-playbook -i rhmap_inventory playbooks/seed-images.yml -e "project_type=core" -e "rhmap_version=4.5"
+ansible-playbook -i rhmap_inventory playbooks/seed-images.yml -e "project_type=mbaas" -e "rhmap_version=4.5"
+ansible-playbook -i rhmap_inventory playbooks/core.yml
+ansible-playbook -i rhmap_inventory playbooks/3-node-mbaas.yml
+popd
