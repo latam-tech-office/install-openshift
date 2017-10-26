@@ -1,0 +1,63 @@
+- set_fact: region={{ gce_default_region }}
+  when: region is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: zone={{ gce_default_zone }}
+  when: zone is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: network_name={{ gce_default_network_name }}
+  when: network_name is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: subnetwork_name={{ gce_default_subnetwork_name }}
+  when: subnetwork_name is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: subnetwork_range={{ gce_default_subnetwork_range }}
+  when: subnetwork_range is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: image={{ gce_default_image }}
+  when: image is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: machine_type={{ gce_default_machine_type }}
+  when: machine_type is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
+
+- set_fact: docker_size={{ gce_default_docker_size }}
+  when: docker_size is not defined
+  tags:
+     - create
+     - master
+     - infra
+     - node
