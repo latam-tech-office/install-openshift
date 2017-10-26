@@ -1,0 +1,4 @@
+pushd /root/postinstall
+ansible-playbook post-install.yaml
+ansible-playbook create_persistentvolumes.yaml -e nfs_server={{ openshift_master_private_ip }}
+popd
