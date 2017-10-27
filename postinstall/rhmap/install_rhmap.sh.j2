@@ -5,5 +5,5 @@ ansible-playbook -i rhmap_inventory playbooks/core.yml
 ansible-playbook -i rhmap_inventory playbooks/1-node-mbaas.yml
 popd
 pushd /root/postinstall
-ansible-playbook rhmap-config.yaml -e openshift_master_url={{ openshift_master_url }} -e openshift_cloudapps_url={{ openshift_cloudapps_url }} -e rhmap_project_core=rhmap-core -e rhmap_project_mbaas=rhmap-1-node-mbaas
+ansible-playbook rhmap_config.yaml -e openshift_master_url={{ openshift_master_url }} -e openshift_cloudapps_url={{ openshift_cloudapps_url }} -e rhmap_project_core=rhmap-core -e rhmap_project_mbaas=rhmap-1-node-mbaas
 popd
