@@ -59,13 +59,17 @@
        set_fact: openshift_master_private_ip={{ master_instance_creation.instance_data[0].private_ip }}
 
      - name: Update bin/install_openshift.sh to call the right server
-       copy: dest=bin/install_openshift.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; ansible-playbook /root/postinstall/post-install.yaml; ansible-playbook /root/postinstall/create_persistentvolumes.yaml -e nfs_server={{ openshift_master_private_ip }}\""
-
-     - name: Update bin/install_openshift_rhmap.sh to call after provisioning
-       copy: dest=bin/install_openshift_rhmap.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; ansible-playbook /root/postinstall/post-install.yaml; ansible-playbook /root/postinstall/create_persistentvolumes.yaml -e nfs_server={{ openshift_master_private_ip }}\"; pushd {{ rhmap_directory }}; ansible-playbook -i rhmap_inventory playbooks/seed-images.yaml -e \"project_type=core\" -e \"rhmap_version=4.5\"; ansible-playbook -i rhmap_inventory playbooks/seed-images.yaml -e \"project_type=mbaas\" -e \"rhmap_version=4.5\"; ansible-playbook -i rhmap_inventory playbooks/core.yml; ansible-playbook -i rhmap_inventory playbooks/1-node-mbaas.yml"
+       copy: dest=bin/install_openshift.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; /root/postinstall/post-openshift-install.sh"
 
      - name: Add a Slack Notification at end of OpenShift's installation
        lineinfile: path=bin/install_openshift.sh insertafter=EOF line="ansible localhost -m slack -a \"token={{ default_slack_token }} msg='OpenShift is Ready to go'\""
+       when: default_slack_token is defined and default_slack_token is not none
+
+     - name: (RHMAP) Update bin/install_openshift_rhmap.sh to call after provisioning
+       copy: dest=bin/install_openshift_rhmap.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; /root/postinstall/post-openshift-install.sh; /root/postinstall/install_rhmap.sh"
+
+     - name: Add a Slack Notification at end of OpenShift's installation
+       lineinfile: path=bin/install_openshift_rhmap.sh insertafter=EOF line="ansible localhost -m slack -a \"token={{ default_slack_token }} msg='OpenShift with RHMAP is Ready to go'\""
        when: default_slack_token is defined and default_slack_token is not none
 
      - name: Attaching a Docker storage{{ ':' }} {{ master_definition.hostname }}
@@ -344,6 +348,11 @@
       tags:
          - prepare_master
 
+    - name: Generating OpenShift PostInstall script
+      template: src=postinstall/post-openshift-install.sh.j2 dest=/root/postinstall/post-openshift-install.sh mode=a+x
+      tags:
+         - prepare_master
+
     - name: (RHMAP) Installing RHMAP Templates
       yum: name=rhmap-fh-openshift-templates      
       tags:
@@ -351,6 +360,17 @@
 
     - name: (RHMAP) Generating RHMAP inventory into Master
       template: src=/tmp/rhmap-inventory dest={{ rhmap_directory }}/rhmap_inventory   
+      tags:
+         - prepare_master
+
+    - name: (RHMAP) Generate installer script
+      template: src=postinstall/rhmap/install_rhmap.sh.j2 dest=/root/postinstall/install_rhmap.sh mode=a+x
+
+    - name: (RHMAP) Download playbook to config RHMAP
+      uri: url=https://raw.githubusercontent.com/latam-tech-office/install-openshift/master/postinstall/rhmap/{{ item }}
+            method=GET status_code=200 creates=True dest=/root/postinstall/{{ item }}
+      with_items:
+           - rhmap_config.yaml
       tags:
          - prepare_master
 
