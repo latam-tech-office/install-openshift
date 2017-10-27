@@ -200,7 +200,7 @@
          - pv_yaml
 
     - name: Template a Persisten Volume for Gitlab-Shell{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
-      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/tmp/persistentvolume-gitlab-shell.yaml
+      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/root/postinstall/persistentvolume-gitlab-shell.yaml
       tags:
          - pv_yaml 
          - pv_yaml_gitlab
@@ -221,11 +221,11 @@
       tags:
          - pv_yaml
 
-    - name: Create PV for Gitlab Shell
-      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
-      tags:
-         - pv_yaml
-         - pv_yaml_gitlab
+#    - name: Create PV for Gitlab Shell
+#      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
+#      tags:
+#         - pv_yaml
+#         - pv_yaml_gitlab
 
   handlers:
     - name: Restart IPTables Service

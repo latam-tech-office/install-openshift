@@ -1,0 +1,263 @@
+- name: RHMAP Setting Up
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+     openshift_username: demo
+     openshift_password: r3dh4t1!
+  tasks: 
+     - name: Installing Node.js
+       yum: name=nodejs state=latest
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Installing zip
+       yum: name=zip state=latest
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Installing FeedHenry Command Line
+       command: npm install -g fh-fhc
+       ignore_errors: True
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: "Get the FrontEnd URL"
+       command: "oc get route rhmap --template \"https://{{ '{{' }}.spec.host{{ '}}'}}\" --namespace {{ rhmap_project_core }}"
+       register: frontend_url
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: "Get the FrontEnd's Username"
+       command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_NAME\")].value{{ '}' }}' --namespace {{ rhmap_project_core }}"
+       register: frontend_username
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: "Get the FrontEnd's Password"
+       command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_PASSWORD\")].value{{ '}' }}' --namespace {{ rhmap_project_core }}"
+       register: frontend_password
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - set_fact: rhmap_url={{ frontend_url.stdout }}
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - set_fact: rhmap_username={{ frontend_username.stdout }}
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - set_fact: rhmap_password={{ frontend_password.stdout }}
+       tags:
+          - rhmap_config
+          - rhmap
+
+#- name: Fetching Internal RHMAP URL
+#  command: oc get service/rhmap-proxy --output jsonpath='http{{ ':' }}//{..metadata.name}.{..metadata.namespace}.svc.cluster.local{{ ':' }}{..spec.ports.*.port}' --namespace {{ rhmap_project_core }}
+#  register: rhmap_internal_url
+#  tags:
+#     - rhmap_config
+#     - rhmap
+
+#- name: Wait for RHMAP to be ready{{ ":" }} {{ rhmap_internal_url.stdout  }}
+#  uri: url="{{ rhmap_internal_url.stdout }}" status_code=200
+     - name: Wait for RHMAP to be ready{{ ":" }} {{ rhmap_url  }}
+       uri: url="{{ rhmap_url }}" status_code=200 validate_certs=no
+       register: rhmap_wait
+       until: rhmap_wait.status == 200
+       retries: 120
+       delay: 10
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Set RHMAP Target
+       command: fhc target {{ rhmap_url }}
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Login as username{{ ':' }} demo@demo.com  password{{ ':' }} R3dh4t1
+       command: fhc login {{ rhmap_username }} {{ rhmap_password }}
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Create a demo user
+       command: fhc admin-users create username="demo@demo.com" password="R3dh4t1!" email="demo@demo.com" name="demo" roles=customeradmin,portaladmin,devadmin,dev,analytics
+       register: rhmap_create_user
+       tags:
+          - rhmap_config
+          - rhmap
+
+     - name: Get MBaaS KEY
+       command: "oc get dc/fh-mbaas --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FHMBAAS_KEY\")].value{{ '}' }}' --namespace {{ rhmap_project_mbaas }}"
+       register: fh_mbaas_key
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - name: Get MBaaS URL
+       command: oc get route/mbaas --output jsonpath='https{{ ':' }}//{..spec.host}' --namespace {{ rhmap_project_mbaas }}
+       register: mbaas_url
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - name: Create a MBaaS Target
+       command: fhc admin mbaas create --id mbaas --url https://{{ openshift_master_url }}:8443 --servicekey {{ fh_mbaas_key.stdout }} --routerDNSUrl *.{{ openshift_cloudapps_url }} --fhMbaasHost {{ mbaas_url.stdout }} --type openshift3
+       ignore_errors: True
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - name: Requesting authorization from OpenShift in order to obtain a Token
+       uri: url="https://openshift.default.svc.cluster.local/oauth/authorize?response_type=token&client_id=openshift-challenging-client" headers="{\"X-CSRF-Token\"{{ ':' }} \"1\"}" validate_certs=False follow_redirects=none method=GET user={{ openshift_username }} password={{ openshift_password }} force_basic_auth=True status_code=302
+       register: authorization_request
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - set_fact: openshift_token={{ authorization_request.location | regex_replace("^(.*)access_token[=]", "") | regex_replace("[&](.*)$", "") }}
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - name: Create an Enviroment for this MBaaS Target using Token{{ ':' }} {{ openshift_token }}
+       command: fhc admin environments create --id demo --label Demo --target mbaas --token {{ openshift_token }}
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_mbaas
+
+     - name: Log as Demo user demo@demo.com
+       command: fhc login demo@demo.com R3dh4t1!
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - name: Create a RHTTravel Project
+       command: fhc projects create RedHat-Travel bare_project --json
+       register: project_info
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+ 
+     - set_fact: project_info_object={{ project_info.stdout | from_json }}
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - name: Delete Directory (if does exist)
+       file: path=/tmp/fhMobileApp state=absent
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - name: Git clone project{{ ':' }} https{{ ':' }}//github.com/latam-tech-office/fhMobileApp
+       command: git clone https://github.com/latam-tech-office/fhMobileApp /tmp/fhMobileApp
+       tags:
+         - rhmap_config
+         - rhmap
+         - rhmap_config_demo
+
+     - name: Compact the contents from fhMobileApp
+       shell: pushd /tmp/fhMobileApp; zip -r fhMobileApp.zip *; popd
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - name: Delete Directory (if does exist)
+       file: path=/tmp/fhCloudApp state=absent
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+ 
+     - name: Git clone project{{ ':' }} https{{ ':' }}//github.com/latam-tech-office/fhCloudApp
+       command: git clone https://github.com/latam-tech-office/fhCloudApp /tmp/fhCloudApp
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - name: Compact contents from fhCloudApp
+       shell: pushd /tmp/fhCloudApp; zip -r fhCloudApp.zip *; popd
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+#- name: Import Contents from fhMobileApp into project
+#  command: fhc import {{ project_info_object.guid }} mobileApp client_hybrid /tmp/fhMobileApp/fhMobileApp.zip
+#  tags:
+#     - rhmap_config
+#     - rhmap
+#     - rhmap_config_demo
+
+#- name: Import Contents from fhCloudApp into Project
+#  command: fhc import {{ project_info_object.guid }} cloudApp cloud_nodejs /tmp/fhCloudApp/fhCloudApp.zip --env=demo
+#  tags:
+#     - rhmap_config
+#     - rhmap
+#     - rhmap_config_demo
+     - name: Import Contents from fhMobileApp into project
+       command: fhc import {{ project_info_object.guid }} mobileApp client_hybrid /tmp/fhMobileApp/fhMobileApp.zip
+       register: mobileApp_info
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+ 
+     - set_fact: mobileApp_info_object={{ mobileApp_info.stdout | from_json }}
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+ 
+     - name: Import Contents from fhCloudApp into Project
+       command: fhc import {{ project_info_object.guid }} cloudApp cloud_nodejs /tmp/fhCloudApp/fhCloudApp.zip --env=demo
+       register: cloudApp_info
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+
+     - set_fact: cloudApp_info_object={{ cloudApp_info.stdout | from_json }}
+       tags:
+         - rhmap_config
+         - rhmap
+         - rhmap_config_demo
+ 
+     - name: Deploy Cloud App
+       command: fhc app stage --app={{ cloudApp_info_object.guid }} --env=demo --runtime=node4
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo
+ 
+     - name: Build Mobile App
+       command: fhc build app={{ mobileApp_info_object.guid }} cloud_app={{ cloudApp_info_object.guid }} destination=android project={{ project_info_object.guid }} environment=demo
+       tags:
+          - rhmap_config
+          - rhmap
+          - rhmap_config_demo

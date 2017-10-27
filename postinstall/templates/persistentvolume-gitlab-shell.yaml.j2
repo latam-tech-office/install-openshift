@@ -17,3 +17,17 @@ items:
       server: {{ nfs_server }}
       path: {{ nfs_path_prefix }}-gitlab-shell
     persistentVolumeReclaimPolicy: Recycle
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: gitlab-shell-claim
+  spec:
+    accessModes:
+    - ReadWriteMany
+    - ReadWriteOnce
+    resources:
+       requests:
+         storage: 5Gi
+    selector: 
+      matchLabels: 
+        rhmap_core: gitlab-shell
