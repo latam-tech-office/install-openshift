@@ -1,1 +1,0 @@
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@35.196.146.94 "sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; ansible-playbook /root/postinstall/post-install.yaml; ansible-playbook /root/postinstall/create_persistentvolumes.yaml -e nfs_server=192.168.0.6"
