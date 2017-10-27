@@ -1,5 +1,5 @@
 ---
-- name: Delete Networking for TestDrive
+- name: Delete Networking for OpenShift Container Platform
   hosts: localhost
   connection: local
   gather_facts: False

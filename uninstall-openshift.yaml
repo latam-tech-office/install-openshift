@@ -74,7 +74,7 @@
        with_items: "{{ nodes_definition }}"
 
      - name: Notifying by Slack about sucessfully deletion
-       slack: token={{ default_slack_token }} msg="TestDrive@Dev{{ ':'}} OpenShift was successfully uninstalled"
+       slack: token={{ default_slack_token }} msg="OpenShift was successfully uninstalled"
        when: default_slack_token is defined and default_slack_token is not none
 
 

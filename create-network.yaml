@@ -1,5 +1,5 @@
 ---
-- name: Creating all the necessary Networking for TestDrive
+- name: Creating all the necessary Networking for OpenShift Container Platform
   hosts: localhost
   connection: local
   gather_facts: False
