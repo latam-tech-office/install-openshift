@@ -6,6 +6,32 @@
      openshift_username: demo
      openshift_password: r3dh4t1!
   tasks: 
+     - name: Modifying some variables into RHMAP Core
+       command: oc env dc/millicore -n rhmap-core GIT_EXTERNAL_PROTOCOL=http BUILDER_ANDROID_SERVICE_HOST=farm.us.redhatmobile.com BUILDER_IPHONE_SERVICE_HOST=farm.us.redhatmobile.com
+       tags:
+          - rhmap_config
+          - rhmap
+
+#     - name: Wait for Millicore to be available
+#       command: oc get pods --output jsonpath='{$..spec.containers[?(@.name=="millicore")]}' --namespace rhmap-core
+#       register: millicore_create
+#       until: millicore_create.rc == 0
+#       retries: 60
+#       delay: 10
+#       tags:
+#          - rhmap_config
+#          - rhmap
+
+#     - name: Wait for Millicore Service on RHMAP Core to be ready
+#       command: oc get pods --output jsonpath='{.items[?(@.spec.containers[*].name=="millicore")].status.conditions[?(@.type=="Ready")].status}' --namespace rhmap-core
+#       register: core_millicore
+#       until: "{{ 'True' in core_millicore.stdout }}"
+#       retries: 60
+#       delay: 10
+#       tags:
+#          - rhmap_config
+#          - rhmap
+
      - name: Installing Node.js
        yum: name=nodejs state=latest
        tags:
