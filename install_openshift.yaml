@@ -198,6 +198,9 @@
      - name: Add the hostname into the temporary inventory{{ ':' }} {{ master_definition.hostname }} into masters section
        lineinfile: dest=/tmp/ansible_hosts.j2 insertafter="\[masters\]" state="present" line="{{ master_definition.hostname }} openshift_public_hostname={{ openshift_master_url }}"
 
+     - name: Add the hostname into the temporary inventory{{ ':' }} {{ master_definition.hostname }} into etcd section
+       lineinfile: dest=/tmp/ansible_hosts.j2 insertafter="\[etcd\]" state="present" line="{{ master_definition.hostname }}"
+
      - name: (RHMAP) Inserting Master hostname into RHMAP inventory
        lineinfile: dest=/tmp/rhmap-inventory regexp="^\[master\]" state="present" line="[master]\n{{ master_definition.hostname }}"
 

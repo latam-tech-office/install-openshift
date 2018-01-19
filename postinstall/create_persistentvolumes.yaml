@@ -128,6 +128,11 @@
     nfs_server: 192.168.0.100
     nfs_path_prefix: /var/storage/local
   tasks:
+    - name: Installing all the necessary NFS Utils package
+      yum: name=nfs-utils state=latest
+      tags:
+         - create
+
     - name: Create directory for NFS Exports
       file: path={{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
       with_items: "{{ persistent_volumes }}"
@@ -199,7 +204,7 @@
       tags: 
          - pv_yaml
 
-    - name: Template a Persisten Volume for Gitlab-Shell{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
+    - name: Template a Persistent Volume for Gitlab-Shell{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
       template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/root/postinstall/persistentvolume-gitlab-shell.yaml
       tags:
          - pv_yaml 
