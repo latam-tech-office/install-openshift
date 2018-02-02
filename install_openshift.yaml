@@ -205,7 +205,7 @@
        lineinfile: dest=/tmp/rhmap-inventory regexp="^\[master\]" state="present" line="[master]\n{{ master_definition.hostname }}"
 
      - name: Add the hostname into the temporary inventory{{ ':' }} {{ master_definition.hostname }} into nodes section 
-       lineinfile: dest=/tmp/ansible_hosts.j2 insertafter="\[nodes\]" state="present" line="{{ master_definition.hostname }}"
+       lineinfile: dest=/tmp/ansible_hosts.j2 insertafter="\[nodes\]" state="present" line="{{ master_definition.hostname }} openshift_schedulable=\"false\""
 
      - name: Add the hostname into the temporary inventory file{{ ':' }} {{ infra_definition.hostname }} into nodes section
        lineinfile: dest=/tmp/ansible_hosts.j2 insertafter="\[nodes\]" state="present" line="{{ infra_definition.hostname }} openshift_node_labels=\"{'host'{{ ':' }} 'infra'}\""
