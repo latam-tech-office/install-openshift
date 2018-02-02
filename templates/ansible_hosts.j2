@@ -18,6 +18,9 @@ openshift_disable_check=disk_availability,docker_storage,memory_availability,doc
 # SSH user, this user should allow ssh based auth without requiring a password
 ansible_ssh_user=root
 
+# Have all Template Broker to be install on Infra Node
+template_service_broker_selector={"host":"infra"}
+
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/openshift-passwords'}]
 
 #### # Defining htpasswd users
