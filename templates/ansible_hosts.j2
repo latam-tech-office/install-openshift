@@ -13,7 +13,7 @@ etcd
 deployment_type=openshift-enterprise
 
 # Disable some checks before installing
-openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability
+openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability,package_version
 
 # SSH user, this user should allow ssh based auth without requiring a password
 ansible_ssh_user=root

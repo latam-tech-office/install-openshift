@@ -5,6 +5,7 @@
   gather_facts: False
   vars_files:
      - gce/authentication
+     - gce/authentication_dns
      - gce/defaults
      - openshift-definition.info
      - notification/slack_authentication
@@ -33,6 +34,16 @@
     
 ### MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER 
 #### MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER 
+     - name: Creating a Static IP Address for OpenShift's Master
+       gce_eip:
+         name: "{{ master_definition.hostname }}"
+         region: "{{ region }}"
+         state: present
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       register: openshift_master_static_ip
+
      - name: Creating instance {{ ':' }} {{ master_definition.hostname }}
        gce:
          instance_names: "{{ master_definition.hostname }}"
@@ -40,6 +51,7 @@
          machine_type: "{{ master_definition.machine }}"
          image: "{{ master_definition.image }}"
          zone: "{{ zone }}"
+         external_ip: "{{ openshift_master_static_ip.address }}"
          network: "{{ network_name }}"
          subnetwork: "{{ subnetwork_name }}"
          tags: ["enable-ssh","openshift-master"]
@@ -91,8 +103,31 @@
                  ansible_port={{ ssh_default_image_port }}
                  openshift_master_private_ip={{ openshift_master_private_ip }}
 
+     - name: (Cloud DNS) Updating entry for Zone{{ ':' }}{{ dns_zone }} for Master {{ openshift_master_url }} {{ openshift_master_static_ip.address }}
+       gcdns_record:
+           zone: "{{ dns_zone }}"
+           record: "{{ openshift_master_url }}"
+           value: "{{ openshift_master_static_ip.address }}"
+           state: present
+           type: A
+           overwrite: true
+           credentials_file: "{{ dns_gce_credentials_file }}"
+           project_id: "{{ dns_gce_project_id }}"
+           service_account_email: "{{ dns_gce_service_account_email }}"
+       when: dns_zone is defined and dns_zone is not none and dns_gce_credentials_file is defined and dns_gce_credentials_file is not none and dns_gce_project_id is defined and dns_gce_project_id is not none and dns_gce_service_account_email is defined and dns_gce_service_account_email is not none
+
 ### INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA 
 #### INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA 
+     - name: Creating a Static IP Address for OpenShift's Infra
+       gce_eip:
+         name: "{{ infra_definition.hostname }}"
+         region: "{{ region }}"
+         state: present
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       register: openshift_infra_static_ip
+
      - name: Creating instance {{ ':' }} {{ infra_definition.hostname }}
        gce:
          instance_names: "{{ infra_definition.hostname }}"
@@ -101,6 +136,7 @@
          image: "{{ infra_definition.image }}"
          zone: "{{ zone }}"
          network: "{{ network_name }}"
+         external_ip: "{{ openshift_infra_static_ip.address }}"
          subnetwork: "{{ subnetwork_name }}"
          tags: ["enable-ssh","openshift-infra-node"]
          disk_auto_delete: True
@@ -132,6 +168,19 @@
        add_host: groups=openshift_infra_group hostname={{ openshift_infra_public_ip }}
                  ansible_user={{ ssh_default_image_user }} ansible_password={{ ssh_default_image_password }}
                  ansible_port={{ ssh_default_image_port }} 
+
+     - name: (Cloud DNS) Updating entry for Zone{{ ':' }}{{ dns_zone }} for Infra *.{{ openshift_cloudapps_url }} {{ openshift_infra_static_ip.address }}
+       gcdns_record:
+           zone: "{{ dns_zone }}"
+           record: "*.{{ openshift_cloudapps_url }}"
+           value: "{{ openshift_infra_static_ip.address }}"
+           state: present
+           type: A
+           overwrite: true
+           credentials_file: "{{ dns_gce_credentials_file }}"
+           project_id: "{{ dns_gce_project_id }}"
+           service_account_email: "{{ dns_gce_service_account_email }}"
+       when: dns_zone is defined and dns_zone is not none and dns_gce_credentials_file is defined and dns_gce_credentials_file is not none and dns_gce_project_id is defined and dns_gce_project_id is not none and dns_gce_service_account_email is defined and dns_gce_service_account_email is not none
 
 ### NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE 
 #### NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE 
@@ -373,6 +422,8 @@
 
     - name: (RHMAP) Generate installer script
       template: src=postinstall/rhmap/install_rhmap.sh.j2 dest=/root/postinstall/install_rhmap.sh mode=a+x
+      tags:
+         - prepare_master
 
     - name: (RHMAP) Download playbook to config RHMAP
       uri: url=https://raw.githubusercontent.com/latam-tech-office/install-openshift/master/postinstall/rhmap/{{ item }}
@@ -398,13 +449,12 @@
        - git
        - net-tools
        - bind-utils
-       - docker
+       - docker-1.12.6*
        - atomic-openshift-excluder
        - atomic-openshift-docker-excluder
        - iptables-services
        - bridge-utils
        - bash-completion
-       - docker
        - httpd-tools
   tasks:
     - name: Loading SSH KEY from localhost (if any)
@@ -431,6 +481,17 @@
 
     - name: Create OpenShift's Master SSH Key
       lineinfile: dest=/root/.ssh/authorized_keys state=present create=yes line="{{ hostvars[groups.openshift_master_group[0]]['openshift_master_ssh_key'] }}"
+      tags:
+         - prepare
+
+    - name: "(TEMP) Removing any version of Docker, so it can be sure getting the right version: 1.12.6*"
+      yum: name="{{ item }}" state=absent
+      with_items:
+          - docker*
+          - docker-common*
+          - scope-containers*
+          - docker-client*
+          - container-selinux*
       tags:
          - prepare
 
