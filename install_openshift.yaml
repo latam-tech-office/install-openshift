@@ -34,7 +34,7 @@
     
 ### MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER 
 #### MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER MASTER 
-     - name: Creating a Static IP Address for OpenShift's Master
+     - name: "MASTER: Creating a Static IP Address"
        gce_eip:
          name: "{{ master_definition.hostname }}"
          region: "{{ region }}"
@@ -44,7 +44,7 @@
          service_account_email: "{{ gce_service_account_email }}"
        register: openshift_master_static_ip
 
-     - name: "Creating boot disk: {{ master_definition.hostname }}"
+     - name: "MASTER: Creating boot disk: {{ master_definition.hostname }}"
        gce_pd:
          name: "{{ master_definition.hostname }}"
          state: present
@@ -57,7 +57,7 @@
          credentials_file: "{{ gce_credentials_file }}"
          service_account_email: "{{ gce_service_account_email }}"
 
-     - name: Creating instance {{ ':' }} {{ master_definition.hostname }}
+     - name: "MASTER: Creating instance {{ ':' }} {{ master_definition.hostname }}"
        gce:
          instance_names: "{{ master_definition.hostname }}"
          state: "present"
@@ -99,14 +99,14 @@
        lineinfile: path=bin/install_openshift_rhmap.sh insertafter=EOF line="ansible localhost -m slack -a \"token={{ default_slack_token }} msg='OpenShift with RHMAP is Ready to go'\""
        when: default_slack_token is defined and default_slack_token is not none
 
-     - name: Attaching a Docker storage{{ ':' }} {{ master_definition.hostname }}
+     - name: "MASTER: Attaching a Docker storage{{ ':' }} {{ master_definition.hostname }}"
        gce_pd:
          instance_name: "{{ master_definition.hostname }}"
          name: "{{ master_definition.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: "{{ master_definition.disk_type }}"
-         size_gb: "{{ master_definition.disk_docker }}"
+         disk_type: "{{ master_definition.disk_docker_type }}"
+         size_gb: "{{ master_definition.disk_docker_size }}"
          delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
@@ -119,7 +119,7 @@
                  ansible_port={{ ssh_default_image_port }}
                  openshift_master_private_ip={{ openshift_master_private_ip }}
 
-     - name: (Cloud DNS) Updating entry for Zone{{ ':' }}{{ dns_zone }} for Master {{ openshift_master_url }} {{ openshift_master_static_ip.address }}
+     - name: "Cloud DNS: Updating entry for Zone{{ ':' }}{{ dns_zone }} for Master {{ openshift_master_url }} {{ openshift_master_static_ip.address }}"
        gcdns_record:
            zone: "{{ dns_zone }}"
            record: "{{ openshift_master_url }}"
@@ -134,7 +134,7 @@
 
 ### INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA 
 #### INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA INFRA 
-     - name: Creating a Static IP Address for OpenShift's Infra
+     - name: "INFRA: Creating a Static IP Address"
        gce_eip:
          name: "{{ infra_definition.hostname }}"
          region: "{{ region }}"
@@ -144,7 +144,7 @@
          service_account_email: "{{ gce_service_account_email }}"
        register: openshift_infra_static_ip
 
-     - name: "Creating boot disk: {{ infra_definition.hostname }}"
+     - name: "INFRA: Creating boot disk: {{ infra_definition.hostname }}"
        gce_pd:
          name: "{{ infra_definition.hostname }}"
          state: present
@@ -157,7 +157,7 @@
          credentials_file: "{{ gce_credentials_file }}"
          service_account_email: "{{ gce_service_account_email }}"
 
-     - name: Creating instance {{ ':' }} {{ infra_definition.hostname }}
+     - name: "INFRA: Creating instance {{ ':' }} {{ infra_definition.hostname }}"
        gce:
          instance_names: "{{ infra_definition.hostname }}"
          state: "present"
@@ -182,14 +182,14 @@
      - name: Getting OpenShift's Infra Public IP{{ ':' }} {{ infra_instance_creation.instance_data[0].public_ip }}
        set_fact: openshift_infra_public_ip={{ infra_instance_creation.instance_data[0].public_ip }}
 
-     - name: Attaching a Docker storage{{ ':' }} {{ infra_definition.hostname }}
+     - name: "INFRA: Attaching a Docker storage{{ ':' }} {{ infra_definition.hostname }}"
        gce_pd:
          instance_name: "{{ infra_definition.hostname }}"
          name: "{{ infra_definition.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: "{{ infra_definition.disk_type }}"
-         size_gb: "{{ infra_definition.disk_docker }}"
+         disk_type: "{{ infra_definition.disk_docker_type }}"
+         size_gb: "{{ infra_definition.disk_docker_size }}"
          delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
@@ -201,7 +201,7 @@
                  ansible_user={{ ssh_default_image_user }} ansible_password={{ ssh_default_image_password }}
                  ansible_port={{ ssh_default_image_port }} 
 
-     - name: (Cloud DNS) Updating entry for Zone{{ ':' }}{{ dns_zone }} for Infra *.{{ openshift_cloudapps_url }} {{ openshift_infra_static_ip.address }}
+     - name: "Cloud DNS: Updating entry for Zone{{ ':' }}{{ dns_zone }} for Infra *.{{ openshift_cloudapps_url }} {{ openshift_infra_static_ip.address }}"
        gcdns_record:
            zone: "{{ dns_zone }}"
            record: "*.{{ openshift_cloudapps_url }}"
@@ -259,8 +259,8 @@
          name: "{{ item.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: "{{ item.disk_type }}"
-         size_gb: "{{ item.disk_docker }}"
+         disk_type: "{{ item.disk_docker_type }}"
+         size_gb: "{{ item.disk_docker_size }}"
          delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
