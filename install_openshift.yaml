@@ -44,18 +44,33 @@
          service_account_email: "{{ gce_service_account_email }}"
        register: openshift_master_static_ip
 
+     - name: "Creating boot disk: {{ master_definition.hostname }}"
+       gce_pd:
+         name: "{{ master_definition.hostname }}"
+         state: present
+         mode: READ_WRITE
+         image: "{{ master_definition.image }}"
+         disk_type: "{{ master_definition.disk_type }}"
+         size_gb: "{{ master_definition.disk_size }}"
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+
      - name: Creating instance {{ ':' }} {{ master_definition.hostname }}
        gce:
          instance_names: "{{ master_definition.hostname }}"
          state: "present"
          machine_type: "{{ master_definition.machine }}"
-         image: "{{ master_definition.image }}"
          zone: "{{ zone }}"
          external_ip: "{{ openshift_master_static_ip.address }}"
          network: "{{ network_name }}"
          subnetwork: "{{ subnetwork_name }}"
          tags: ["enable-ssh","openshift-master"]
          disk_auto_delete: True
+         disks:
+            - name: "{{ master_definition.hostname }}"
+              mode: READ_WRITE
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"
          service_account_email: "{{ gce_service_account_email }}"
@@ -90,8 +105,9 @@
          name: "{{ master_definition.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: pd-standard
+         disk_type: "{{ master_definition.disk_type }}"
          size_gb: "{{ master_definition.disk_docker }}"
+         delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"
@@ -128,18 +144,33 @@
          service_account_email: "{{ gce_service_account_email }}"
        register: openshift_infra_static_ip
 
+     - name: "Creating boot disk: {{ infra_definition.hostname }}"
+       gce_pd:
+         name: "{{ infra_definition.hostname }}"
+         state: present
+         mode: READ_WRITE
+         image: "{{ infra_definition.image }}"
+         disk_type: "{{ infra_definition.disk_type }}"
+         size_gb: "{{ infra_definition.disk_size }}"
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+
      - name: Creating instance {{ ':' }} {{ infra_definition.hostname }}
        gce:
          instance_names: "{{ infra_definition.hostname }}"
          state: "present"
          machine_type: "{{ infra_definition.machine }}"
-         image: "{{ infra_definition.image }}"
          zone: "{{ zone }}"
          network: "{{ network_name }}"
          external_ip: "{{ openshift_infra_static_ip.address }}"
          subnetwork: "{{ subnetwork_name }}"
          tags: ["enable-ssh","openshift-infra-node"]
          disk_auto_delete: True
+         disks:
+            - name: "{{ infra_definition.hostname }}"
+              mode: READ_WRITE
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"
          service_account_email: "{{ gce_service_account_email }}"
@@ -157,8 +188,9 @@
          name: "{{ infra_definition.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: pd-standard
+         disk_type: "{{ infra_definition.disk_type }}"
          size_gb: "{{ infra_definition.disk_docker }}"
+         delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"
@@ -184,17 +216,34 @@
 
 ### NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE 
 #### NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE NODE 
-     - name: Creating instance ALL NODES
+     - name: "NODE: Creating boot disk: {{ item.hostname }}"
+       gce_pd:
+         name: "{{ item.hostname }}"
+         state: present
+         mode: READ_WRITE
+         image: "{{ item.image }}"
+         disk_type: "{{ item.disk_type }}"
+         size_gb: "{{ item.disk_size }}"
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       with_items: "{{ nodes_definition }}"
+       register: node_instance_creation
+
+     - name: "NODE: Creating instance: {{ item.hostname }}"
        gce:
          instance_names: "{{ item.hostname }}"
          state: "present"
          machine_type: "{{ item.machine }}"
-         image: "{{ item.image }}"
          zone: "{{ zone }}"
          network: "{{ network_name }}"
          subnetwork: "{{ subnetwork_name }}"
          tags: "{{ item.tags }}"
          disk_auto_delete: True
+         disks:
+            - name: "{{ item.hostname }}"
+              mode: READ_WRITE
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"
          service_account_email: "{{ gce_service_account_email }}"
@@ -204,14 +253,15 @@
 
      - debug: var=node_instance_creation
 
-     - name: Attaching a Docker storage for Nodes
+     - name: "NODE: Attaching a Docker storage for Node: {{ item.hostname }}"
        gce_pd:
          instance_name: "{{ item.hostname }}"
          name: "{{ item.hostname }}-docker"
          state: present
          mode: READ_WRITE
-         disk_type: pd-standard
+         disk_type: "{{ item.disk_type }}"
          size_gb: "{{ item.disk_docker }}"
+         delete_on_termination: True
          zone: "{{ zone }}"
          project_id: "{{ gce_project_id }}"
          credentials_file: "{{ gce_credentials_file }}"

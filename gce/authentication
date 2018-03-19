@@ -1,6 +1,6 @@
-gce_service_account_email: 
 gce_credentials_file: 
 gce_project_id: 
+gce_service_account_email: 
 
 ### Please add the following information in each task in your playbook
 ### project_id="{{ gce_project_id }}" credentials_file="{{ gce_credentials_file }}" service_account_email="{{ gce_service_account_email }}"

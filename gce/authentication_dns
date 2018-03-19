@@ -1,7 +1,7 @@
 ## This file is to update any DNS entry at Cloud DNS, which relies in a different project
 dns_gce_credentials_file: 
 dns_gce_project_id: 
-dns_gce_service_account_email:
+dns_gce_service_account_email: 
 
 ### Please add the following information in each task in your playbook
 ### project_id="{{ gce_project_id }}" credentials_file="{{ gce_credentials_file }}" service_account_email="{{ gce_service_account_email }}"
