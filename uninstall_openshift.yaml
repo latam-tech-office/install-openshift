@@ -11,7 +11,7 @@
   tasks:
      - include: commons/setting_defaults.yaml
 
-     - name: Deleting instance exists{{ ':' }} {{ master_definition.hostname }}
+     - name: "MASTER: Deleting instance exists:{{ master_definition.hostname }}"
        gce:
          instance_names: "{{  master_definition.hostname }}"
          zone: "{{ zone }}"
@@ -21,7 +21,27 @@
          service_account_email: "{{ gce_service_account_email }}"
        ignore_errors: True
 
-     - name: Deleting Docker Storage for{{ ':' }}{{  master_definition.hostname }}
+     - name: "MASTER: Deleting boot disk: {{ master_definition.hostname }}"
+       gce_pd:
+         name: "{{ master_definition.hostname }}"
+         state: absent
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "MASTER: Deleting a Static IP Address"
+       gce_eip:
+         name: "{{ master_definition.hostname }}"
+         region: "{{ region }}"
+         state: absent
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "MASTER: Deleting Docker Storage: {{  master_definition.hostname }}-docker"
        gce_pd:
          name: "{{  master_definition.hostname }}-docker"
          zone: "{{ zone }}"
@@ -31,7 +51,7 @@
          service_account_email: "{{ gce_service_account_email }}"
        ignore_errors: True
 
-     - name: Deleting instance exists{{ ':' }} {{ infra_definition.hostname }}
+     - name: "INFRA: Deleting instance exists{{ ':' }} {{ infra_definition.hostname }}"
        gce:
          instance_names: "{{ infra_definition.hostname }}"
          zone: "{{ zone }}"
@@ -41,7 +61,27 @@
          service_account_email: "{{ gce_service_account_email }}"
        ignore_errors: True
 
-     - name: Deleting Docker Storage for{{ ':' }}{{ infra_definition.hostname }}
+     - name: "INFRA: Deleting boot disk: {{ infra_definition.hostname }}"
+       gce_pd:
+         name: "{{ infra_definition.hostname }}"
+         state: absent
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "INFRA: Deleting a Static IP Address"
+       gce_eip:
+         name: "{{ infra_definition.hostname }}"
+         region: "{{ region }}"
+         state: absent
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "INFRA: Deleting Docker Storage for: {{ infra_definition.hostname }}-docker"
        gce_pd:
          name: "{{ infra_definition.hostname }}-docker"
          zone: "{{ zone }}"
@@ -51,7 +91,7 @@
          service_account_email: "{{ gce_service_account_email }}"
        ignore_errors: True
 
-     - name: Deleting ALL Nodes instances
+     - name: "NODE: Deleting ALL Nodes instances"
        gce:
          instance_names: "{{ item.hostname }}"
          zone: "{{ zone }}"
@@ -62,7 +102,18 @@
        ignore_errors: True
        with_items: "{{ nodes_definition }}"
 
-     - name: Deleting ALL Nodes's docker storage
+     - name: "NODE: Deleting boot disk: {{ item.hostname }}"
+       gce_pd:
+         name: "{{ item.hostname }}"
+         state: absent
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       with_items: "{{ nodes_definition }}"
+       ignore_errors: True
+
+     - name: "NODE: Deleting ALL Nodes's docker storage"
        gce_pd:
          name: "{{ item.hostname }}-docker"
          zone: "{{ zone }}"
@@ -76,6 +127,3 @@
      - name: Notifying by Slack about sucessfully deletion
        slack: token={{ default_slack_token }} msg="OpenShift was successfully uninstalled"
        when: default_slack_token is defined and default_slack_token is not none
-
-
-
