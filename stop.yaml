@@ -1,0 +1,47 @@
+---
+- name: Stopping OpenShift Container Platform
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - gce/authentication
+     - gce/defaults
+     - openshift-definition.info
+     - notification/slack_authentication
+  tasks:
+     - include: commons/setting_defaults.yaml
+
+     - name: "MASTER: Stopping instance:{{ master_definition.hostname }}"
+       gce:
+         instance_names: "{{ master_definition.hostname }}"
+         state: stopped
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "INFRA: Stopping instance:{{ infra_definition.hostname }}"
+       gce:
+         instance_names: "{{ infra_definition.hostname }}"
+         state: stopped
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       ignore_errors: True
+
+     - name: "NODE: Stopping all Node instances"
+       gce:
+         instance_names: "{{ item.hostname }}"
+         state: stopped
+         zone: "{{ zone }}"
+         project_id: "{{ gce_project_id }}"
+         credentials_file: "{{ gce_credentials_file }}"
+         service_account_email: "{{ gce_service_account_email }}"
+       with_items: "{{ nodes_definition }}"
+       ignore_errors: True
+
+     - name: "SLACK: Notifying by Slack about sucessfully started" 
+       slack: token={{ default_slack_token }} msg="OpenShift was successfully stopped"
+       when: default_slack_token is defined and default_slack_token is not none
