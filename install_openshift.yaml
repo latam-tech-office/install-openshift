@@ -86,7 +86,7 @@
        set_fact: openshift_master_private_ip={{ master_instance_creation.instance_data[0].private_ip }}
 
      - name: Update bin/install_openshift.sh to call the right server
-       copy: dest=bin/install_openshift.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; /root/postinstall/post-openshift-install.sh\""
+       copy: dest=bin/install_openshift.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml; sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml; /root/postinstall/post-openshift-install.sh\""
 
      - name: Add a Slack Notification at end of OpenShift's installation
        lineinfile: path=bin/install_openshift.sh insertafter=EOF line="ansible localhost -m slack -a \"token={{ default_slack_token }} msg='OpenShift is Ready to go'\""
