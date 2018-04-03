@@ -93,7 +93,7 @@
        when: default_slack_token is defined and default_slack_token is not none
 
      - name: (RHMAP) Update bin/install_openshift_rhmap.sh to call after provisioning
-       copy: dest=bin/install_openshift_rhmap.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml; /root/postinstall/post-openshift-install.sh; /root/postinstall/install_rhmap.sh\""
+       copy: dest=bin/install_openshift_rhmap.sh content="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ ssh_default_image_user }}@{{ openshift_master_public_ip }} \"sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml; sudo ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml; /root/postinstall/post-openshift-install.sh; /root/postinstall/install_rhmap.sh\""
 
      - name: Add a Slack Notification at end of OpenShift's installation
        lineinfile: path=bin/install_openshift_rhmap.sh insertafter=EOF line="ansible localhost -m slack -a \"token={{ default_slack_token }} msg='OpenShift with RHMAP is Ready to go'\""
