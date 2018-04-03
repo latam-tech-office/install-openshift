@@ -11,7 +11,7 @@
   tasks:
      - include: commons/setting_defaults.yaml
 
-     - name: "MASTER: Deleting instance exists:{{ master_definition.hostname }}"
+     - name: "MASTER: Deleting instance exists: {{ master_definition.hostname }}"
        gce:
          instance_names: "{{  master_definition.hostname }}"
          zone: "{{ zone }}"
