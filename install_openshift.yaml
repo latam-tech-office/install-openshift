@@ -499,13 +499,17 @@
        - git
        - net-tools
        - bind-utils
-       - docker-1.12.6*
+       - docker
        - atomic-openshift-excluder
        - atomic-openshift-docker-excluder
        - iptables-services
        - bridge-utils
        - bash-completion
        - httpd-tools
+       - screen
+       - kexec-tools 
+       - sos 
+       - psacct
   tasks:
     - name: Loading SSH KEY from localhost (if any)
       set_fact: ssh_key="{{ lookup('file','{{ ssh_key_file }}') }}"
@@ -531,17 +535,6 @@
 
     - name: Create OpenShift's Master SSH Key
       lineinfile: dest=/root/.ssh/authorized_keys state=present create=yes line="{{ hostvars[groups.openshift_master_group[0]]['openshift_master_ssh_key'] }}"
-      tags:
-         - prepare
-
-    - name: "(TEMP) Removing any version of Docker, so it can be sure getting the right version: 1.12.6*"
-      yum: name="{{ item }}" state=absent
-      with_items:
-          - docker*
-          - docker-common*
-          - scope-containers*
-          - docker-client*
-          - container-selinux*
       tags:
          - prepare
 
