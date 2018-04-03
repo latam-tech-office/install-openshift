@@ -1,2 +1,8 @@
 *.swp
 *.retry
+install_openshift.sh
+install_openshift_rhmap.sh
+authentication
+authentication_dns
+defaults
+slack_authentication
