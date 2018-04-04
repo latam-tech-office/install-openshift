@@ -54,7 +54,12 @@ openshift_hosted_registry_replicas=1
 #### # See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
 #### #
 #### # By default metrics are not automatically deployed, set this to enable them
-openshift_metrics_install_metrics=True
+
+# RECOMMENDED BY NOT WORKING
+# openshift_metrics_install_metrics=True
+openshift_hosted_metrics_deploy=true
 
 #### Override metricsPublicURL in the master config for cluster metrics
-openshift_metrics_hawkular_hostname=https://hawkular-metrics.cloudapps.testdrive.com/hawkular/metrics
+# RECOMMENDED BUT NOT WORKING
+# openshift_metrics_hawkular_hostname=https://hawkular-metrics.cloudapps.testdrive.com/hawkular/metrics
+openshift_master_metrics_public_url=https://hawkular-metrics.cloudapps.testdrive.com/hawkular/metrics
