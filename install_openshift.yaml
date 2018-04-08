@@ -324,7 +324,7 @@
 ### RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION 
 ####  RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION RED HAT SUBSCRIPTION 
 - name: (RED HAT SUBSCRIPTION) Installing the necessary Red Hat's Subscription in each host
-  hosts: all
+  hosts: openshift_master_group, openshift_infra_group, openshift_node_group
   gather_facts: False
   vars_files:
      - openshift-definition.info
@@ -486,7 +486,7 @@
 ### PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE 
 ###   PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE PREPARE 
 - name: (PREPARE) Preparing all hosts to install OpenShift
-  hosts: all
+  hosts: openshift_master_group, openshift_infra_group, openshift_node_group
   gather_facts: False
   vars_files:
      - gce/defaults
