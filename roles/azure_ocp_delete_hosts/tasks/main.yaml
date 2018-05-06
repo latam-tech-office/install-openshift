@@ -1,0 +1,69 @@
+- name: "BASTION: Delete instance: {{ bastion_definition.hostname }}"
+  azure_rm_virtualmachine: name={{ bastion_definition.hostname }} state=absent
+                           resource_group={{ name }} location={{ region }}
+  tags: [ ocp, azure, delete, bastion ]
+
+- name: "BASTION: Delete Network Interface: {{ bastion_definition.hostname }}"
+  azure_rm_networkinterface: name={{ bastion_definition.hostname }} state=absent
+                             resource_group={{ name }} location={{ region }}
+  tags: [ ocp, azure, delete, bastion ]
+
+- name: "BASTION: Delete Public IP: {{ bastion_definition.hostname }}"
+  azure_rm_publicipaddress: name={{ bastion_definition.hostname }} state=absent
+                            resource_group={{ name }} location={{ region }}
+  tags: [ ocp, azure, delete, bastion ]
+
+- name: "MASTER: Delete all instances"
+  azure_rm_virtualmachine: name={{ item.hostname }} state=absent
+                           resource_group={{ name }} location={{ region }}
+  with_items: "{{ master_definition }}"
+  tags: [ ocp, azure, delete, master ]
+
+- name: "INFRA: Delete all instances"
+  azure_rm_virtualmachine: name={{ item.hostname }} state=absent
+                           resource_group={{ name }} location={{ region }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, delete, infra ]
+
+- name: "MASTER: Delete Network Interface"
+  azure_rm_networkinterface: name={{ item.hostname }} state=absent
+                             resource_group={{ name }} location={{ region }}
+  with_items: "{{ master_definition }}"
+  tags: [ ocp, azure, delete, master ]
+
+- name: "INFRA: Delete Network Interface"
+  azure_rm_networkinterface: name={{ item.hostname }} state=absent
+                             resource_group={{ name }} location={{ region }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, delete, infra ]
+
+
+- name: "MASTER: Delete all Public IP"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=absent
+                            resource_group={{ name }} location={{ region }}
+  with_items: "{{ master_definition }}"
+  tags: [ ocp, azure, delete, master ]
+
+- name: "INFRA: Delete all Public IP"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=absent
+                            resource_group={{ name }} location={{ region }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, delete, infra ]
+
+- name: "NODE: Delete all instances"
+  azure_rm_virtualmachine: name={{ item.hostname }} state=absent
+                           resource_group={{ name }} location={{ region }}
+  with_items: "{{ node_definition }}"
+  tags: [ ocp, azure, delete, node ]
+
+- name: "NODE: Delete Network Interface"
+  azure_rm_networkinterface: name={{ item.hostname }} state=absent
+                             resource_group={{ name }} location={{ region }}
+  with_items: "{{ node_definition }}"
+  tags: [ ocp, azure, delete, node ]
+
+- name: "NODE: Delete all Public IP"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=absent
+                            resource_group={{ name }} location={{ region }}
+  with_items: "{{ node_definition }}"
+  tags: [ ocp, azure, delete, node ]

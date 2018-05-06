@@ -1,0 +1,11 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: "STEP #1: Creating Networking capabilities for OpenShift"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_initial" }
+     - { role: "{{ cloud_provider }}_ocp_network" }

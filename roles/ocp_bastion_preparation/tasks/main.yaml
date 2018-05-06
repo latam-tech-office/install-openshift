@@ -1,0 +1,57 @@
+- name: "Loading SSH KEY from localhost (if any)"
+  set_fact: ssh_key="{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+  when: admin_ssh_publickey is defined and admin_ssh_publickey is not none
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Generate keys to be copied to whole cluster"
+  command: "ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N \"\""
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Read the content of this key"
+  slurp: src=/root/.ssh/id_rsa.pub
+  register: content_encoded
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Reading Public Key generated. It's going to be copied to the entire cluster"
+  set_fact: bastion_ssh_key="{{ content_encoded.content | b64decode }}"
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Generating script to perform all necessary OpenShift installations"
+  template: src=install_openshift.sh.j2 dest=/root/install_openshift.sh mode=a+x force=True
+  tags: [ ocp, prepare_bastion ]
+
+- name: "LOCAL: Generating script (aka STEP #3) locally to start installation"
+  local_action: template src=step3_install_openshift.sh.j2 dest=step3_install_openshift.sh mode=a+x force=True
+  when: bastion_public_ip is defined and bastion_public_ip is not none
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Installing OpenShift Utils and other packages"
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ bastion_packages }}"
+  tags: [ ocp, prepare_bastion ]
+
+- name: Define the final Inventory for installation
+  template: src=ansible_hosts.j2 dest=/etc/ansible/hosts
+  tags: [ ocp, prepare_bastion ]
+
+- name: Disable 'host_key_checking' in Ansible
+  lineinfile: dest=/etc/ansible/ansible.cfg regexp="host_key_checking" state=present line="host_key_checking = False"
+  tags: [ ocp, prepare_bastion ]
+
+- name: Create directory "postinstall"
+  file: path=/root/postinstall/templates state=directory
+  tags: [ ocp, prepare_bastion ]
+
+- name: Download all the necessary playbooks for post install
+  uri: url=https://raw.githubusercontent.com/maltron/testazure/master/ocp_postinstall/{{ item }}
+       method=GET status_code=200 creates=True dest=/root/postinstall/{{ item }}
+  with_items:
+     - create_persistentvolumes.yaml
+     - postinstall.yaml
+     - templates/persistentvolume-gitlab-shell.yaml.j2
+     - templates/persistentvolume.yaml.j2
+  tags: [ ocp, prepare_bastion ]
+
+#- name: Generating OpenShift PostInstall script
+#  template: src=postinstall/post-openshift-install.sh.j2 dest=/root/postinstall/post-openshift-install.sh mode=a+x
+#  tags: [ ocp, prepare_bastion ]

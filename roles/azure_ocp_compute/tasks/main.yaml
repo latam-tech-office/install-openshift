@@ -1,0 +1,221 @@
+- name: "BASTION: Creating Public IP. Allocation: {{ public_ip_allocation_bastion }}"
+  azure_rm_publicipaddress: name={{ bastion_definition.hostname }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ public_ip_allocation_bastion }}
+                            tags={{ labels }}
+  tags: [ ocp, azure, compute, public_ip, bastion ]
+
+- name: "BASTION: Creating Network Interface"
+  azure_rm_networkinterface:
+              name: "{{ bastion_definition.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-master-infra"
+              ip_configurations:
+                - { name: "{{ bastion_definition.hostname }}", public_ip_address_name: "{{ bastion_definition.hostname }}" }
+              security_group: "{{ name }}-bastion-sg"
+              tags: "{{ labels }}"
+  tags: [ ocp, azure, compute, network_interfaces, bastion ]
+
+- name: "BASTION: Creating instance"
+  azure_rm_virtualmachine:
+              name: "{{ bastion_definition.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ bastion_definition.machine }}"
+              managed_disk_type: "{{ openshift_storage_account_type }}"
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False
+              ssh_public_keys:
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+              network_interfaces: "{{ bastion_definition.hostname }}"
+              subnet: "{{ name }}-master-infra"
+              image: "{{ openshift_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+  register: bastion_instance_result
+  tags: [ ocp, azure, compute, vm, bastion ]
+
+- name: "BASTION: Fetching Bastion Public IP"
+  set_fact: bastion_public_ip="{{ bastion_instance_result.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ ocp, azure, compute, vm, bastion ]
+
+- name: "BASTION: Adding group: openshift_bastion"
+  add_host: hostname={{ bastion_instance_result.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}
+            groups=openshift_bastion  
+            ansible_user={{ admin_username }}
+            bastion_public_ip={{ bastion_public_ip }}
+  tags: [ ocp, azure, compute, bastion ]
+
+- name: "MASTER: Creating Public IP. Allocation: {{ public_ip_allocation_master }}"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ public_ip_allocation_master }}
+                            tags={{ labels }}
+  with_items: "{{ master_definition }}"
+  tags: [ ocp, azure, compute, public_ip, master ]
+
+- name: "MASTER: Creating Network Interface"
+  azure_rm_networkinterface: 
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-master-infra"
+              ip_configurations:
+                - name: "{{ item.hostname }}"
+                  public_ip_address_name: "{{ item.hostname }}" 
+                  public_ip_allocation_method: "{{ public_ip_allocation_master }}"
+              security_group: "{{ name }}-master-sg"
+              tags: "{{ labels }}"
+  with_items: "{{ master_definition }}"
+  tags: [ ocp, azure, compute, network_interfaces, master ]
+
+- name: "MASTER: Creating instances"
+  azure_rm_virtualmachine: 
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ item.machine }}"
+              managed_disk_type: "{{ openshift_storage_account_type }}"
+              data_disks: 
+                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False 
+              ssh_public_keys: 
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}" 
+              network_interfaces: "{{ item.hostname }}"
+              subnet: "{{ name }}-master-infra"
+              image: "{{ openshift_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+  with_items: "{{ master_definition }}"
+  register: master_instance_creation
+  tags: [ ocp, azure, compute, vm, master ]
+
+- name: "MASTER: Adding group: openshift_master_group (ALL MASTERS)"
+  add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_master_group
+            ansible_user={{ admin_username }}
+  with_items: "{{ master_instance_creation.results }}"
+  tags: [ ocp, azure, compute, master ]
+
+- name: "INFRA: Creating Public IP. Allocation: {{ public_ip_allocation_infra }}"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ public_ip_allocation_infra }}
+                            tags={{ labels }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, compute, public_ip, infra ]
+
+- name: "INFRA: Creating Network Interface"
+  azure_rm_networkinterface:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-master-infra"
+              ip_configurations:
+                - name: "{{ item.hostname }}"
+                  public_ip_address_name: "{{ item.hostname }}" 
+                  public_ip_allocation_method: "{{ public_ip_allocation_infra }}"
+              security_group: "{{ name }}-infra-sg"
+              tags: "{{ labels }}"
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, compute, network_interfaces, infra ]
+
+- name: "INFRA: Creating instances"
+  azure_rm_virtualmachine:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ item.machine }}"
+              managed_disk_type: "{{ openshift_storage_account_type }}"
+              data_disks:
+                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False
+              ssh_public_keys:
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+              network_interfaces: "{{ item.hostname }}"
+              subnet: "{{ name }}-master-infra"
+              image: "{{ openshift_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+  with_items: "{{ infra_definition }}"
+  register: infra_instance_creation
+  tags: [ ocp, azure, compute, vm, infra ]
+
+- name: "INFRA: Adding group: openshift_infra_group"
+  add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_infra_group
+            ansible_user={{ admin_username }}
+  with_items: "{{ infra_instance_creation.results }}"
+  tags: [ ocp, azure, compute, infra ]
+
+- name: "NODE: Creating Public IP. Allocation: {{ public_ip_allocation_node }}"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ public_ip_allocation_node }}
+                            tags={{ labels }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, azure, compute, public_ip, node ]
+
+- name: "NODE: Creating Network Interface"
+  azure_rm_networkinterface:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-node"
+              ip_configurations:
+                - name: "{{ item.hostname }}"
+                  public_ip_address_name: "{{ item.hostname }}"
+                  public_ip_allocation_method: "{{ public_ip_allocation_node }}"
+              security_group: "{{ name }}-node-sg"
+              tags: "{{ labels }}"
+  with_items: "{{ node_definition }}"
+  tags: [ ocp, azure, compute, network_interfaces, node ]
+
+- name: "NODE: Creating instances"
+  azure_rm_virtualmachine:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ item.machine }}"
+              managed_disk_type: "{{ openshift_storage_account_type }}"
+              data_disks:
+                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False
+              ssh_public_keys:
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+              network_interfaces: "{{ item.hostname }}"
+              subnet: "{{ name }}-node"
+              image: "{{ openshift_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+  with_items: "{{ node_definition }}"
+  register: node_instance_creation
+  tags: [ ocp, azure, compute, vm, node ]
+
+- name: "NODE: Adding group: openshift_node_group"
+  add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_node_group
+            ansible_user={{ admin_username }} 
+  with_items: "{{ node_instance_creation.results }}"
+  tags: [ ocp, azure, compute, node ]

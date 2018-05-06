@@ -1,0 +1,80 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+
+[masters]
+{% for master in master_definition %}
+{{ master.hostname }} openshift_public_hostname={{ openshift_master_url }}
+{% endfor %}
+
+[nodes]
+{% for master in master_definition %}
+{{ master.hostname }} openshift_node_labels="{'host': 'master'}"
+{% endfor %}
+{% for infra in infra_definition %}
+{{ infra.hostname }} openshift_node_labels="{'host': 'infra'}"
+{% endfor %}
+{% for node in node_definition %}
+{{ node.hostname }} openshift_node_labels="{'host': 'apps'}"
+{% endfor %}
+
+[etcd]
+{% for master in master_definition %}
+{{ master.hostname }}
+{% endfor %}
+
+[OSEv3:vars]
+deployment_type=openshift-enterprise
+
+# Disable some checks before installing
+openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability,package_version
+
+# Configuring Cluster Logging
+# https://docs.openshift.com/container-platform/3.7/install_config/install/advanced_install.html#advanced-install-cluster-logging
+openshift_logging_install_logging=true
+
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user=root
+
+# Have all Template Broker to be install on Infra Node
+template_service_broker_selector={"host":"infra"}
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/openshift-passwords'}]
+
+#### # Defining htpasswd users
+openshift_master_htpasswd_users={'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0', 'mauricio': '$apr1$cUEhxniK$.dvXBcd9XE6BmSpeWnb2o.'}
+
+#### Router selector (optional)
+#### # Router will only be created if nodes matching this label are present.
+#### # Default value: 'region=infra'
+openshift_hosted_router_selector='host=infra'
+openshift_router_selector='host=infra'
+
+#### default subdomain to use for exposed routes
+openshift_master_default_subdomain={{ openshift_cloudapps_url }}
+
+openshift_hosted_registry_selector='host=infra'
+openshift_registry_selector='host=infra'
+
+# Registry replicas (optional)
+# Unless specified, openshift-ansible will calculate the replica count
+# based on the number of nodes matching the openshift registry selector.
+openshift_hosted_registry_replicas=1
+
+# Disable management of the OpenShift Registry
+#openshift_hosted_manage_registry=false
+
+#### Metrics deployment
+#### # See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
+#### #
+#### # By default metrics are not automatically deployed, set this to enable them
+
+# RECOMMENDED BY NOT WORKING
+# openshift_metrics_install_metrics=True
+openshift_hosted_metrics_deploy=true
+
+#### Override metricsPublicURL in the master config for cluster metrics
+# RECOMMENDED BUT NOT WORKING
+# openshift_metrics_hawkular_hostname=https://hawkular-metrics.cloudapps.testdrive.com/hawkular/metrics
+openshift_master_metrics_public_url=https://hawkular-metrics.cloudapps.testdrive.com/hawkular/metrics
