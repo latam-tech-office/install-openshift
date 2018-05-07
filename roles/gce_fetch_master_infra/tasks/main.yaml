@@ -1,0 +1,23 @@
+- name: "MASTER: Fetching Information"
+  gce: instance_names={{ item.hostname }} zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}"
+  register: master_instances
+  tags: [ ocp, gce, fetch, master ]
+
+- name: "MASTER: (First MASTER only) Public IP: {{ master_instances.results[0].instance_data[0].public_ip }}"
+  set_fact: master_public_ip="{{ master_instances.results[0].instance_data[0].public_ip }}"
+  tags: [ ocp, gce, fetch, master ]
+
+- name: "INFRA: Fetching Information"
+  gce: instance_names={{ item.hostname }} zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ infra_definition }}"
+  register: infra_instances
+  tags: [ ocp, gce, fetch, infra ]
+
+- name: "INFRA: (First INFRA only) Public IP: {{ infra_instances.results[0].instance_data[0].public_ip }}"
+  set_fact: infra_public_ip="{{ infra_instances.results[0].instance_data[0].public_ip }}"
+  tags: [ ocp, gce, fetch, infra ]

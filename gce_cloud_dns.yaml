@@ -1,0 +1,41 @@
+---
+- name: "GCE Cloud DNS: Fetching OpenShift's IP and updating into a Zone"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  pre_tasks:
+     - name: "Check Parameter: gce_clouddns_zone"
+       fail: msg="gce_clouddns_zone is not defined or is empty"
+       when: gce_clouddns_zone is not defined or gce_clouddns_zone is none
+       tags: [ always ]
+
+     - name: "Check Parameter: gce_clouddns_credentials_file"
+       fail: msg="gce_clouddns_credentials_file is not defined or is empty"
+       when: gce_clouddns_credentials_file is not defined or gce_clouddns_credentials_file is none
+       tags: [ always ]
+
+     - name: "Check Parameter: gce_clouddns_project_id"
+       fail: msg="gce_clouddns_project_id is not defined or is empty"
+       when: gce_clouddns_project_id is not defined or gce_clouddns_project_id is none
+       tags: [ always ]
+
+     - name: "Check Parameter: gce_clouddns_service_account_email"
+       fail: msg="gce_clouddns_service_account_email is not defined or is empty"
+       when: gce_clouddns_service_account_email is not defined or gce_clouddns_service_account_email is none
+       tags: [ always ]
+
+     - name: "Check Parameter: openshift_master_url"
+       fail: msg="openshift_master_url not defined or is empty"
+       when: openshift_master_url is not defined or openshift_master_url is none
+       tags: [ always ]
+
+     - name: "Check Parameter: openshift_cloudapps_url"
+       fail: msg="openshift_cloudapps_url is not defined or is empty"
+       when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
+       tags: [ always ]
+  roles:
+     - { role: "{{ cloud_provider }}_fetch_master_infra" }
+     - { role: gce_cloud_dns }
