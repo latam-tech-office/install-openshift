@@ -8,27 +8,33 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   pre_tasks:
-     - fail: msg="admin_username is not defined or is empty"
+     - name: "Check Parameter: admin_username"
+       fail: msg="admin_username is not defined or is empty"
        when: admin_username is not defined or admin_username is none
        tags: [ always ]
 
-     - fail: msg="admin_ssh_publickey is not defined or is empty"
+     - name: "Check Parameter: admin_ssh_publickey"
+       fail: msg="admin_ssh_publickey is not defined or is empty"
        when: admin_ssh_publickey is not defined or admin_ssh_publickey is none
        tags: [ always ]
 
-     - fail: msg="redhat_subscription_username is not defined or is empty"
+     - name: "Check Parameter: redhat_subscription_username"
+       fail: msg="redhat_subscription_username is not defined or is empty"
        when: redhat_subscription_username is not defined or redhat_subscription_username is none
        tags: [ always ]
 
-     - fail: msg="redhat_subscription_password is not defined or is empty"
+     - name: "Check Parameter: redhat_subscription_password"
+       fail: msg="redhat_subscription_password is not defined or is empty"
        when: redhat_subscription_password is not defined or redhat_subscription_password is none
        tags: [ always ]
 
-     - fail: msg="openshift_master_url not defined or is empty"
+     - name: "Check Parameter: openshift_master_url"
+       fail: msg="openshift_master_url not defined or is empty"
        when: openshift_master_url is not defined or openshift_master_url is none
        tags: [ always ]
 
-     - fail: msg="openshift_cloudapps_url is not defined or is empty"
+     - name: "Check Parameter: openshift_cloudapps_url"
+       fail: msg="openshift_cloudapps_url is not defined or is empty"
        when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
        tags: [ always ]
   roles:
@@ -39,7 +45,7 @@
 
 - name: "ALL: Applying Red Hat Subscription"
   hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
-  gather_facts: False
+  gather_facts: True
   become: True
   vars_files:
      - openshift.config
@@ -74,5 +80,5 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles:
-     - { role: "{{ cloud_provider }}_final_steps" }
+     - { role: "{{ cloud_provider }}_ocp_final_steps" }
 

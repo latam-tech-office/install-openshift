@@ -57,3 +57,15 @@
 - name: "Updating the entire host. It might take a long time"
   yum: name="*" state=latest
   tags: [ ocp, redhat_subscription ]
+
+- name: "Rebooting host"
+  shell: sleep 10 && /sbin/shutdown -r now
+  async: 300
+  poll: 0
+  become: True
+  ignore_errors: True
+  tags: [ ocp, redhat_subscription, reboot ]
+
+- name: "Waiting for Server to come back"
+  local_action: wait_for host={{ inventory_hostname }} port=22 delay=30 timeout=600 state=started
+  tags: [ ocp, redhat_subscription, reboot ]
