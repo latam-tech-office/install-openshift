@@ -1,0 +1,15 @@
+- name: "GCE Cloud DNS: Zone: {{ gce_clouddns_zone }} MASTER: {{ openshift_master_url }} = {{ master_public_ip }}"
+  gcdns_record: zone={{ gce_clouddns_zone }} state=present
+                type=A overwrite=True
+                record={{ openshift_master_url }}  value={{ master_public_ip }}
+                credentials_file={{ gce_clouddns_credentials_file }}
+                project_id={{ gce_clouddns_project_id }} service_account_email={{ gce_clouddns_service_account_email }}
+  tags: [ ocp, gce, cloud_dns ]
+
+- name: "GCE Cloud DNS: Zone: {{ gce_clouddns_zone }} INFRA: {{ openshift_cloudapps_url }} = {{ infra_public_ip }}"
+  gcdns_record: zone={{ gce_clouddns_zone }} state=present 
+                type=A overwrite=True
+                record={{ openshift_cloudapps_url }}  value={{ infra_public_ip }}
+                credentials_file={{ gce_clouddns_credentials_file }}
+                project_id={{ gce_clouddns_project_id }} service_account_email={{ gce_clouddns_service_account_email }}
+  tags: [ ocp, gce, cloud_dns ]
