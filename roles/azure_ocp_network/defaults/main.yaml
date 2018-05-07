@@ -1,0 +1,24 @@
+network_openshift_address_prefix: "10.0.0.0/8"
+
+# OpenShift Master Networking specifics
+network_subnet_openshift_master_prefix: "10.1.0.0/16"
+network_security_group_master:
+   - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
+   - { name: "webconsole", protocol: "Tcp", destination_port_range: 8443, access: "Allow", priority: 102, direction: "Inbound" }
+   - { name: "cockpit",    protocol: "Tcp", destination_port_range: 9090, access: "Allow", priority: 103, direction: "Inbound" }
+
+# OpenShift InfraNode Networking specifics
+network_security_group_infra:
+   - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
+   - { name: "web",        protocol: "Tcp", destination_port_range: 80,   access: "Allow", priority: 102, direction: "Inbound" }
+   - { name: "ssl",        protocol: "Tcp", destination_port_range: 443,  access: "Allow", priority: 103, direction: "Inbound" }
+   - { name: "healthZ",    protocol: "Tcp", destination_port_range: 1936, access: "Allow", priority: 104, direction: "Inbound" }
+
+# OpenShift Node Networking specifics (aka Application Nodes)
+network_subnet_openshift_node_prefix: "10.2.0.0/16"
+network_security_group_node:
+   - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
+
+# OpenShift Bastion Networking specifics
+network_security_group_bastion:
+   - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
