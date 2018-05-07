@@ -3,6 +3,11 @@
   when: admin_ssh_publickey is defined and admin_ssh_publickey is not none
   tags: [ ocp, prepare_bastion ]
 
+- name: "Copy a SSH Key (if does exist)"
+  lineinfile: dest=/root/.ssh/authorized_keys state=present create=yes line="{{ ssh_key }}"
+  when: ssh_key is defined
+  tags: [ ocp, prepare_bastion ]
+
 - name: "Generate keys to be copied to whole cluster"
   command: "ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N \"\""
   tags: [ ocp, prepare_bastion ]
@@ -22,6 +27,11 @@
 
 - name: "LOCAL: Generating script (aka STEP #3) locally to start installation"
   local_action: template src=step3_install_openshift.sh.j2 dest=step3_install_openshift.sh mode=a+x force=True
+  when: bastion_public_ip is defined and bastion_public_ip is not none
+  tags: [ ocp, prepare_bastion ]
+
+- name: "LOCAL: Generating script to easy SSH Bastion"
+  local_action: template src=ssh_bastion.sh.j2 dest=ssh_bastion.sh mode=a+x force=True
   when: bastion_public_ip is defined and bastion_public_ip is not none
   tags: [ ocp, prepare_bastion ]
 

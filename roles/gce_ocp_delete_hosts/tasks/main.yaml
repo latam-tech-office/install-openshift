@@ -1,0 +1,29 @@
+- name: "BASTION: Deleting instance"
+  gce: instance_names={{ bastion_definition.hostname }} state=absent zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete, bastion ]
+
+- name: "BASTION: Deleting Static IP Address"
+  gce_eip: name={{ bastion_definition.hostname }} state=absent region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, compute, static_ip, bastion ]
+
+- name: "MASTER, INFRA and NODE: Deleting instance"
+  gce: instance_names={{ item.hostname }} state=absent zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  ignore_errors: True
+  tags: [ ocp, gce, delete, master ]
+
+- name: "MASTER and INFRA: Deleting Static IP Address"
+  gce_eip: name={{ item.hostname }} state=absent region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}"
+  ignore_errors: True
+  tags: [ ocp, gce, compute, static_ip, master ]

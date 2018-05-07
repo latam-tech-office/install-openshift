@@ -6,6 +6,7 @@
   gather_facts: False
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   pre_tasks:
      - fail: msg="admin_username is not defined or is empty"
        when: admin_username is not defined or admin_username is none
@@ -59,15 +60,26 @@
   become: True
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles: 
      - { role: ocp_hosts_preparation }
 
+- name: "GCE Cloud DNS: Updating DNS Zone (if any)"
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+     - openshift.config
+  roles: 
+     - gce_cloud_dns
+       when: gce_clouddns_zone is defined and gce_clouddns_zone is not none and gce_clouddns_credentials_file is defined and gce_clouddns_credentials_file is not none and gce_clouddns_project_id is defined and gce_clouddns_project_id is not none and gce_clouddns_service_account_email is defined and gce_clouddns_service_account_email is not none
+
 - name: "Final Steps"
-  hosts: openshift_master_group, openshift_infra_group, openshift_node_group
+  hosts: localhost
   gather_facts: False
   become: True
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles:
      - { role: "{{ cloud_provider }}_final_steps" }
 

@@ -1,0 +1,29 @@
+- name: "SECURITY GROUP: Deleting all Firewall Rules"
+  gce_net: name={{ name }} state=absent
+           fwname={{ item }}
+           subnet_name={{ item }} subnet_region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items:
+      - "{{ name }}-enable-ssh"
+      - "{{ name }}-master"
+      - "{{ name }}-infranode"
+      - "{{ name }}-internal-node-communication"
+
+- name: "SUBNET: Deleting"
+  gce_net: name={{ name }} state=absent
+           mode=custom 
+           subnet_name={{ item }} subnet_region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: 
+      - "{{ name }}-master-infra"
+      - "{{ name }}-node"
+  tags: [ ocp, gce, delete_all, subnet ]
+
+- name: "NETWORK: Deleting"
+  gce_net: name={{ name }} state=absent
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  tags: [ ocp, gce, delete_all, network ]
+

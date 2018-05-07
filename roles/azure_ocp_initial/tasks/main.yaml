@@ -1,7 +1,27 @@
+- name: "Check Parameter: azure_subscription_id"
+  fail: msg="azure_subscription_id is not defined or is empty"
+  when: azure_subscription_id is not defined or azure_subscription_id is none
+  tags: [ azure, ocp, initial, parameter ]
+
+- name: "Check Parameter: azure_tenant"
+  fail: msg="azure_tenant is not defined or is empty"
+  when: azure_tenant is not defined or azure_tenant is none
+  tags: [ azure, ocp, initial, parameter ]
+
+- name: "Check Parameter: azure_client_id"
+  fail: msg="azure_client_id is not defined or is empty"
+  when: azure_client_id is not defined or azure_client_id is none
+  tags: [ azure, ocp, initial, parameter ]
+
+- name: "Check Parameter: azure_secret"
+  fail: msg="azure_secret is not defined or is empty"
+  when: azure_secret is not defined or azure_secret is none
+  tags: [ azure, ocp, initial, parameter ]
+
 - name: "Creating Resource Group: {{ name }}"
   azure_rm_resourcegroup: name={{ name }} state=present location={{ region }}
                           tags={{ labels }}
-  tags:
-     - ocp
-     - azure
-     - initial
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
+  ignore_errors: True
+  tags: [ azure, ocp, initial, resource_group ]

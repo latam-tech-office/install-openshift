@@ -1,0 +1,10 @@
+---
+- name: Deleting ALL OpenShift
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
+     - { role: "{{ cloud_provider }}_ocp_delete_all" }

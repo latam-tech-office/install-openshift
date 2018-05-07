@@ -1,0 +1,10 @@
+# Google Cloud Engine (aka GCE) specifics
+gce_target_tag_enable_ssh: "enable-ssh"
+gce_target_tag_openshift_master: "openshift-master"
+gce_target_tag_openshift_infra: "openshift-infra-node"
+
+# GCE has the concept of Zone within a region
+gce_zone: "{{ region }}-c"
+
+# Docker Partition on hosts
+docker_device: /dev/sdb

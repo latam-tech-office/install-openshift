@@ -3,6 +3,8 @@
                             resource_group={{ name }} location={{ region }}
                             allocation_method={{ public_ip_allocation_bastion }}
                             tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, compute, public_ip, bastion ]
 
 - name: "BASTION: Creating Network Interface"
@@ -17,6 +19,10 @@
                 - { name: "{{ bastion_definition.hostname }}", public_ip_address_name: "{{ bastion_definition.hostname }}" }
               security_group: "{{ name }}-bastion-sg"
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   tags: [ ocp, azure, compute, network_interfaces, bastion ]
 
 - name: "BASTION: Creating instance"
@@ -38,6 +44,10 @@
               image: "{{ openshift_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   register: bastion_instance_result
   tags: [ ocp, azure, compute, vm, bastion ]
 
@@ -57,6 +67,8 @@
                             resource_group={{ name }} location={{ region }}
                             allocation_method={{ public_ip_allocation_master }}
                             tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
   with_items: "{{ master_definition }}"
   tags: [ ocp, azure, compute, public_ip, master ]
 
@@ -74,6 +86,10 @@
                   public_ip_allocation_method: "{{ public_ip_allocation_master }}"
               security_group: "{{ name }}-master-sg"
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ master_definition }}"
   tags: [ ocp, azure, compute, network_interfaces, master ]
 
@@ -98,11 +114,19 @@
               image: "{{ openshift_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ master_definition }}"
   register: master_instance_creation
   tags: [ ocp, azure, compute, vm, master ]
 
-- name: "MASTER: Adding group: openshift_master_group (ALL MASTERS)"
+- name: "MASTER: (First MASTER only) Public IP: {{ master_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: master_public_ip="{{ master_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ ocp, gce, compute, vm, master ]
+
+- name: "MASTER: Adding group: openshift_master_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_master_group
             ansible_user={{ admin_username }}
   with_items: "{{ master_instance_creation.results }}"
@@ -113,6 +137,8 @@
                             resource_group={{ name }} location={{ region }}
                             allocation_method={{ public_ip_allocation_infra }}
                             tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
   with_items: "{{ infra_definition }}"
   tags: [ ocp, azure, compute, public_ip, infra ]
 
@@ -130,6 +156,10 @@
                   public_ip_allocation_method: "{{ public_ip_allocation_infra }}"
               security_group: "{{ name }}-infra-sg"
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ infra_definition }}"
   tags: [ ocp, azure, compute, network_interfaces, infra ]
 
@@ -154,9 +184,17 @@
               image: "{{ openshift_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ infra_definition }}"
   register: infra_instance_creation
   tags: [ ocp, azure, compute, vm, infra ]
+
+- name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: infra_public_ip="{{ infra_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ ocp, gce, compute, vm, infra ]
 
 - name: "INFRA: Adding group: openshift_infra_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_infra_group
@@ -169,6 +207,8 @@
                             resource_group={{ name }} location={{ region }}
                             allocation_method={{ public_ip_allocation_node }}
                             tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
   with_items: "{{ infra_definition }}"
   tags: [ ocp, azure, compute, public_ip, node ]
 
@@ -186,6 +226,10 @@
                   public_ip_allocation_method: "{{ public_ip_allocation_node }}"
               security_group: "{{ name }}-node-sg"
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ node_definition }}"
   tags: [ ocp, azure, compute, network_interfaces, node ]
 
@@ -210,6 +254,10 @@
               image: "{{ openshift_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
   with_items: "{{ node_definition }}"
   register: node_instance_creation
   tags: [ ocp, azure, compute, vm, node ]

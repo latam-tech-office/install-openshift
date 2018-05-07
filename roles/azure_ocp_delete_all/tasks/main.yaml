@@ -1,0 +1,3 @@
+- name: "Deleting ALL OpenShift: {{ name }}"
+  azure_rm_resourcegroup: name={{ name }} state=absent force=True
+  tags: [ ocp, azure, delete_all ]

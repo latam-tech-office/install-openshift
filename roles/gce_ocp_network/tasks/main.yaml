@@ -1,0 +1,29 @@
+- name: "SUBNET: Creating Master+Infra, Node"
+  gce_net: name={{ name }} state=present
+           mode=custom 
+           subnet_name={{ item.name }} subnet_region={{ region }}
+           ipv4_range={{ item.ipv4_range }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: 
+     - { name: "{{ name }}-master-infra", ipv4_range: "{{ network_openshift_subnet_master_prefix }}" }
+     - { name: "{{ name }}-node",         ipv4_range: "{{ network_openshift_subnet_node_prefix }}" }
+  tags: [ ocp, gce, network, subnet ]
+
+- name: "SECURITY GROUP: Creating Firewall Rules"
+  gce_net: name={{ name }} state=present
+           fwname="{{ name }}-{{ item.name }}"
+           allowed={{ item.allow }}  src_range={{ item.range }}   target_tags={{ item.tag }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ network_openshift_security_group }}"
+  tags: [ ocp, gce, network, sg ]
+
+- name: "SECURITY GROUP: Creating Firewall Rules: intra-nodes communication"
+  gce_net: name={{ name }} state=present
+           fwname="{{ name }}-{{ item.name }}"
+           allowed="tcp:0-65535;udp:0-65535;icmp"  src_range={{ item.range }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ network_openshift_security_group_all }}"
+  tags: [ ocp, gce, network, sg ]

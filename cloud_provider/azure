@@ -1,0 +1,4 @@
+# Microsoft Azure specifics
+
+# Docker Partition on hosts
+docker_device: /dev/sdc

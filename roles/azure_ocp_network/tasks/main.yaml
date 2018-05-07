@@ -3,6 +3,8 @@
                            resource_group={{ name }} location={{ region }}
                            address_prefixes={{ network_openshift_address_prefix }}
                            tags={{ labels }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "Creating Subnet {{ name }}-master-infra for Master and infra: {{ network_subnet_openshift_master_prefix }}"
@@ -11,6 +13,8 @@
                    virtual_network_name={{ name }} 
                    address_prefix_cidr={{ network_subnet_openshift_master_prefix }}
                    tags={{ labels }}
+                   subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                   client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "NODE: Creating Subnet {{ name }}-node for Application Nodes: {{ network_subnet_openshift_node_prefix }}"
@@ -19,6 +23,8 @@
                    virtual_network_name={{ name }}
                    address_prefix_cidr={{ network_subnet_openshift_node_prefix }}
                    tags={{ labels }}
+                   subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                   client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "MASTER: Creating Network Security Group (aka SG): {{ name }}-master-sg"
@@ -26,6 +32,8 @@
                           resource_group={{ name }} location={{ region }}
                           rules={{ network_security_group_master }}
                           tags={{ labels }}
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "INFRA: Creating Network Security Group (aka SG): {{ name }}-infra-sg"
@@ -33,6 +41,8 @@
                           resource_group={{ name }} location={{ region }}
                           rules={{ network_security_group_infra }}
                           tags={{ labels }}
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "NODE: Creating Network Security Group (aka SG): {{ name }}-node-sg"
@@ -40,6 +50,8 @@
                           resource_group={{ name }} location={{ region }}
                           rules={{ network_security_group_node }}
                           tags={{ labels }}
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
 - name: "BASTION: Creating Network Security Group (aka SG): {{ name }}-bastion-sg"
@@ -47,4 +59,6 @@
                           resource_group={{ name }} location={{ region }}
                           rules={{ network_security_group_bastion }}
                           tags={{ labels }}
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network, bastion ]

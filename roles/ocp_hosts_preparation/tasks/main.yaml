@@ -27,11 +27,11 @@
   tags: [ ocp, prepare_hosts ]
 
 # https://docs.openshift.com/container-platform/3.9/install_config/install/host_preparation.html#configuring-docker-thin-pool
-- name: Create a partition for Docker
+- name: "Create a partition for Docker: {{ docker_device }}"
   command: parted {{ docker_device }} --script 'mklabel msdos mkpart primary 0% 100%'
   tags: [ ocp, prepare_hosts ]
 
-- name: Create a VG named docker-vg (used for Docker)
+- name: "Create a VG named docker-vg (used for Docker): {{ docker_device_partition }}"
   lvg: vg=docker-vg pvs={{ docker_device_partition }}
   tags: [ ocp, prepare_hosts ]
 
@@ -40,23 +40,23 @@
   ignore_errors: True
   tags: [ ocp, prepare_hosts ]
 
-- name: Configuring Docker-Storage-Setup first
+- name: "Configuring Docker-Storage-Setup first"
   lineinfile: dest=/etc/sysconfig/docker-storage-setup line="VG=docker-vg"
   tags: [ ocp, prepare_hosts ]
 
-- name: Run a Docker-Storage-Setup
+- name: "Run a Docker-Storage-Setup"
   command: /usr/bin/docker-storage-setup
   tags: [ ocp, prepare_hosts ]
 
-- name: Execute a Atomic OpenShift Excluder
+- name: "Execute a Atomic OpenShift Excluder"
   command: atomic-openshift-excluder unexclude
   tags: [ ocp, prepare_hosts ]
 
 # https://docs.openshift.com/container-platform/3.9/install_config/install/host_preparation.html#managing-docker-container-logs
-- name: Setting Docker configuration with with the correct info
+- name: "Setting Docker configuration with with the correct info"
   lineinfile: dest=/etc/sysconfig/docker regexp="OPTIONS=.*" line="OPTIONS=\"--selinux-enabled --insecure-registry 172.30.0.0/16  --log-driver=journald\""
   tags: [ ocp, prepare_hosts ]
 
-- name: Run this command to guarantee Certified Containers running
+- name: "Ensure Certified Containers can be run"
   command: /usr/libexec/rhsmcertd-worker
   tags: [ ocp, prepare_hosts ]

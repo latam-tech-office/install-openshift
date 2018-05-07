@@ -1,0 +1,162 @@
+- name: "BASTION: Creating Static IP Address"
+  gce_eip: name={{ bastion_definition.hostname }} state=present region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  tags: [ ocp, gce, compute, static_ip, bastion ]
+
+- name: "BASTION: Creating disk"
+  gce_pd: name={{ bastion_definition.hostname }} state=present zone={{ gce_zone }}
+          mode="READ_WRITE"
+          image={{ openshift_base_image }}
+          disk_type={{ bastion_definition.disk_type }} size_gb={{ bastion_definition.disk_size }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  tags: [ ocp, gce, compute, disk, bastion ]
+
+- name: "BASTION: Creating Instance"
+  gce:
+    instance_names: "{{ bastion_definition.hostname }}"
+    state: "present"
+    machine_type: "{{ bastion_definition.machine }}"
+    zone: "{{ gce_zone }}"
+    external_ip: "{{ bastion_definition.hostname }}"
+    network: "{{ name }}"
+    subnetwork: "{{ name }}-master-infra"
+    tags: ["{{ gce_target_tag_enable_ssh }}"]
+    disk_auto_delete: True
+    disks:
+       - name: "{{ bastion_definition.hostname }}"
+         mode: READ_WRITE
+    credentials_file: "{{ gce_credentials_file }}"
+    project_id: "{{ gce_project_id }}"
+    service_account_email: "{{ gce_service_account_email }}"
+  register: bastion_instance_creation
+  tags: [ ocp, gce, compute, vm, bastion ]
+
+- name: "BASTION: Adding group: openshift_bastion"
+  add_host: hostname={{ bastion_instance_creation.instance_data[0].public_ip }}
+            groups=openshift_bastion
+            ansible_user={{ admin_username }}  ansible_password={{ openshift_base_image_password }}
+            bastion_public_ip={{ bastion_instance_creation.instance_data[0].public_ip }}
+  tags: [ ocp, gce, compute, bastion ]
+
+- name: "MASTER and INFRA: Creating Static IP Address"
+  gce_eip: name={{ item.hostname }} state=present region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}"
+  register: openshift_master_static_ip
+  tags: [ ocp, gce, compute, static_ip, master ]
+
+- name: "MASTER, INFRA and NODE: Creating disk"
+  gce_pd: name={{ item.hostname }} state=present zone={{ gce_zone }}
+          mode="READ_WRITE"
+          image={{ openshift_base_image }}
+          disk_type={{ item.disk_type }} size_gb={{ item.disk_size }} 
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  tags: [ ocp, gce, compute, disk, master ]
+
+- name: "MASTER: Creating Instance"
+  gce:
+    instance_names: "{{ item.hostname }}"
+    state: "present"
+    machine_type: "{{ item.machine }}"
+    zone: "{{ gce_zone }}"
+    external_ip: "{{ item.hostname }}"
+    network: "{{ name }}"
+    subnetwork: "{{ name }}-master-infra"
+    tags: ["{{ gce_target_tag_enable_ssh }}","{[ gce_target_tag_openshift_master }}"]
+    disk_auto_delete: True
+    disks:
+       - name: "{{ item.hostname }}"
+         mode: READ_WRITE
+    credentials_file: "{{ gce_credentials_file }}"
+    project_id: "{{ gce_project_id }}"
+    service_account_email: "{{ gce_service_account_email }}"
+  with_items: "{{ master_definition }}"
+  register: master_instance_creation
+  tags: [ ocp, gce, compute, vm, master ]
+
+- name: "MASTER: (First MASTER only) Public IP: {{ master_instance_creation.results[0].instance_data[0].public_ip }}"
+  set_fact: master_public_ip="{{ master_instance_creation.results[0].instance_data[0].public_ip }}"
+  tags: [ ocp, gce, compute, vm, master ]
+
+- name: "MASTER: Adding group: openshift_master_group"
+  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_master_group
+            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+  with_items: "{{ master_instance_creation.results }}"
+  tags: [ ocp, gce, compute, master ]
+
+- name: "INFRA: Creating Instance"
+  gce:
+    instance_names: "{{ item.hostname }}"
+    state: "present"
+    machine_type: "{{ item.machine }}"
+    zone: "{{ gce_zone }}"
+    external_ip: "{{ item.hostname }}"
+    network: "{{ name }}"
+    subnetwork: "{{ name }}-master-infra"
+    tags: ["{{ gce_target_tag_enable_ssh }}","{[ gce_target_tag_openshift_infra }}"]
+    disk_auto_delete: True
+    disks:
+       - name: "{{ item.hostname }}"
+         mode: READ_WRITE
+    credentials_file: "{{ gce_credentials_file }}"
+    project_id: "{{ gce_project_id }}"
+    service_account_email: "{{ gce_service_account_email }}"
+  with_items: "{{ infra_definition }}"
+  register: infra_instance_creation
+  tags: [ ocp, gce, compute, vm, infra ]
+
+- name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
+  set_fact: infra_public_ip="{{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
+  tags: [ ocp, gce, compute, vm, infra ]
+
+- name: "INFRA: Adding group: openshift_infra_group"
+  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_infra_group
+            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+  with_items: "{{ infra_instance_creation.results }}"
+  tags: [ ocp, gce, compute, infra ]
+
+- name: "NODE: Creating Instance"
+  gce:
+    instance_names: "{{ item.hostname }}"
+    state: "present"
+    machine_type: "{{ item.machine }}"
+    zone: "{{ gce_zone }}"
+    network: "{{ name }}"
+    subnetwork: "{{ name }}-node"
+    tags: ["{{ gce_target_tag_enable_ssh }}"]
+    disk_auto_delete: True
+    disks:
+       - name: "{{ item.hostname }}"
+         mode: READ_WRITE
+    credentials_file: "{{ gce_credentials_file }}"
+    project_id: "{{ gce_project_id }}"
+    service_account_email: "{{ gce_service_account_email }}"
+  with_items: "{{ node_definition }}"
+  register: node_instance_creation
+  tags: [ ocp, gce, compute, vm, node ]
+
+- name: "NODE: Adding group: openshift_node_group"
+  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_node_group
+            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+  with_items: "{{ node_instance_creation.results }}"
+  tags: [ ocp, azure, compute, node, add_host ]
+
+- name: "MASTER, INFRA and NODE: Attaching a Docker storage"
+  gce_pd: name="{{ item.hostname }}-docker" state=present zone={{ gce_zone }}
+          mode=READ_WRITE
+          disk_type={{ item.disk_docker_type }} size_gb={{ item.disk_docker_size }}
+          delete_on_termination=True  instance_name={{ item.hostname }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  tags: [ ocp, gce, compute, docker ]
+
+- name: "MASTER, INFRA and NODE: Waiting to be ready"
+  wait_for: host={{ item.instance_data[0].public_ip }} port=22 delay=30 state=started
+  with_items: "{{ master_instance_creation.results }}+{{ node_instance_creation.results }}+{{ infra_instance_creation.results }}"
+  tags: [ ocp, gce, compute, wait ]
