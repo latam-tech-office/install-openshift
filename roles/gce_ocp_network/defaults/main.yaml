@@ -1,0 +1,14 @@
+network_openshift_address_prefix: "10.0.0.0/8"
+
+network_openshift_security_group:
+    - { name: "enable-ssh", allow: "tcp:22",          range: "0.0.0.0/0", tag: "{{ gce_target_tag_enable_ssh }}" }
+    - { name: "master",     allow: "tcp:8443,9090",   range: "0.0.0.0/0", tag: "{{ gce_target_tag_openshift_master }}" }
+    - { name: "infranode",  allow: "tcp:80,443,1936", range: "0.0.0.0/0", tag: "{{ gce_target_tag_openshift_infra }}" }
+network_openshift_security_group_all:
+    - { name: "internal-node-communication", range: "{{ network_openshift_address_prefix }}" }
+
+# OpenShift Master Networking specifics
+network_openshift_subnet_master_prefix: "10.1.0.0/16"
+
+# OpenShift Node Networking specifics (aka Application Nodes)
+network_openshift_subnet_node_prefix: "10.2.0.0/16"
