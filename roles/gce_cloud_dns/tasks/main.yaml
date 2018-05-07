@@ -7,10 +7,10 @@
   tags: [ ocp, gce, cloud_dns ]
   when: gce_clouddns_zone is defined and gce_clouddns_zone is not none and gce_clouddns_credentials_file is defined and gce_clouddns_credentials_file is not none and gce_clouddns_project_id is defined and gce_clouddns_project_id is not none and gce_clouddns_service_account_email is defined and gce_clouddns_service_account_email is not none
 
-- name: "GCE Cloud DNS: Zone: {{ gce_clouddns_zone }} INFRA: {{ openshift_cloudapps_url }} = {{ infra_public_ip }}"
+- name: "GCE Cloud DNS: Zone: {{ gce_clouddns_zone }} INFRA: *.{{ openshift_cloudapps_url }} = {{ infra_public_ip }}"
   gcdns_record: zone={{ gce_clouddns_zone }} state=present 
                 type=A overwrite=True
-                record={{ openshift_cloudapps_url }}  value={{ infra_public_ip }}
+                record="*.{{ openshift_cloudapps_url }}"  value={{ infra_public_ip }}
                 credentials_file={{ gce_clouddns_credentials_file }}
                 project_id={{ gce_clouddns_project_id }} service_account_email={{ gce_clouddns_service_account_email }}
   tags: [ ocp, gce, cloud_dns ]
