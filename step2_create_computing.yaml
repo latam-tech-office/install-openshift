@@ -52,6 +52,7 @@
   become: True
   vars_files:
      - openshift.config
+     - notification/slack_authentication
   roles: 
      - { role: ocp_bastion_preparation }
 
