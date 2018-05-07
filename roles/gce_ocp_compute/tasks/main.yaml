@@ -67,7 +67,7 @@
     external_ip: "{{ item.hostname }}"
     network: "{{ name }}"
     subnetwork: "{{ name }}-master-infra"
-    tags: ["{{ gce_target_tag_enable_ssh }}","{[ gce_target_tag_openshift_master }}"]
+    tags: ["{{ gce_target_tag_enable_ssh }}","{{ gce_target_tag_openshift_master }}"]
     disk_auto_delete: True
     disks:
        - name: "{{ item.hostname }}"
@@ -98,7 +98,7 @@
     external_ip: "{{ item.hostname }}"
     network: "{{ name }}"
     subnetwork: "{{ name }}-master-infra"
-    tags: ["{{ gce_target_tag_enable_ssh }}","{[ gce_target_tag_openshift_infra }}"]
+    tags: ["{{ gce_target_tag_enable_ssh }}","{{ gce_target_tag_openshift_infra }}"]
     disk_auto_delete: True
     disks:
        - name: "{{ item.hostname }}"

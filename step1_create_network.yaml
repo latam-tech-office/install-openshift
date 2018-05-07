@@ -6,6 +6,7 @@
   gather_facts: False
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles:
      - { role: "{{ cloud_provider }}_ocp_initial" }
      - { role: "{{ cloud_provider }}_ocp_network" }

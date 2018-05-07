@@ -35,6 +35,7 @@
      - { role: azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
      - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
      - { role: "{{ cloud_provider }}_ocp_compute" }
+     - { role: gce_cloud_dns }
 
 - name: "ALL: Applying Red Hat Subscription"
   hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
@@ -63,15 +64,6 @@
      - cloud_provider/{{ cloud_provider }}
   roles: 
      - { role: ocp_hosts_preparation }
-
-- name: "GCE Cloud DNS: Updating DNS Zone (if any)"
-  hosts: localhost
-  gather_facts: False
-  vars_files:
-     - openshift.config
-  roles: 
-     - gce_cloud_dns
-       when: gce_clouddns_zone is defined and gce_clouddns_zone is not none and gce_clouddns_credentials_file is defined and gce_clouddns_credentials_file is not none and gce_clouddns_project_id is defined and gce_clouddns_project_id is not none and gce_clouddns_service_account_email is defined and gce_clouddns_service_account_email is not none
 
 - name: "Final Steps"
   hosts: localhost
