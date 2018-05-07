@@ -4,5 +4,5 @@ ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/adhoc/uninstall.
 ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml
 ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml
 {% if default_slack_token is defined and default_slack_token is not none %}
-ansible localhost -m slack -a "token={{ default_slack_token }} msg='OpenShift is Ready to go on {{ cloud_provider }}'"
+ansible localhost -m slack -a "token={{ default_slack_token }} msg='{{ message_when_ready }}'"
 {% endif %}

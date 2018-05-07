@@ -1,1 +1,2 @@
 default_slack_token: 
+message_when_ready: "OpenShift is Ready to go on {{ cloud_provider }}"
