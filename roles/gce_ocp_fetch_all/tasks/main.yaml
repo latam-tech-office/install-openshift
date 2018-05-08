@@ -1,0 +1,33 @@
+- name: "MASTER, INFRA and NODE: Enabling SSH"
+  gce_tag: instance_name={{ item.hostname }} state=present zone={{ gce_zone }}
+           tags="{{ gce_target_tag_enable_ssh }}"
+           pem_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  tags: [ ocp, gce, fetch, cluster ]
+
+- name: "MASTER, INFRA and NODE: Fetching Information"
+  gce: instance_names={{ item.hostname }} zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  register: ocp_instances
+  tags: [ ocp, gce, fetch, cluster ]
+
+- name: "MASTER, INFRA and NODE: Creating Host group: openshift_cluster"
+  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_cluster
+            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+  with_items: "{{ ocp_instances.results }}"
+  tags: [ ocp, gce, fetch, cluster ]
+
+- name: "BASTION: Fetching Information"
+  gce: instance_names={{ bastion_definition.hostname }} zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  register: bastion_instance
+  tags: [ ocp, gce, fetch, bastion ]
+
+- name: "BASTION: Adding to Host Group: openshift_cluster"
+  add_host: hostname={{ bastion_instance.instance_data[0].public_ip }} groups=openshift_cluster
+            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}r
+  tags: [ ocp, gce, fetch, bastion ]
