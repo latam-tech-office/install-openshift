@@ -1,0 +1,4 @@
+- name: "RED HAT SUBSCRIPTION: Unregistering host"
+  command: subscription-manager unregister
+  ignore_errors: True
+  tags: [ ocp, gce, rehat_subsription, unregister ]
