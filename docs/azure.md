@@ -17,14 +17,14 @@ OpenShift requires a valid subscription to be able to install packages from Red 
 Besides that, it's important to have available
 * Ansible (latest: version 2.5)
 * Ansible's Module for Azure 
-```
+```bash
 $ pip install ansible[azure]
 ```
 
 ## Setup file: ** openshift.config **
 
 This file contains all the necessary information you might need to have a basic cluster. Here is a example of the contents of this file:
-```
+```yaml
 cloud_provider: azure
 
 name: openshift
