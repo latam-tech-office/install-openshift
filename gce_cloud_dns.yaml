@@ -37,5 +37,5 @@
        when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
        tags: [ always ]
   roles:
-     - { role: "{{ cloud_provider }}_fetch_master_infra" }
+     - { role: "{{ cloud_provider }}_ocp_fetch_master_infra" }
      - { role: gce_cloud_dns }
