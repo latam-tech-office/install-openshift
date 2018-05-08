@@ -15,11 +15,11 @@
 - name: "Read the content of this key"
   slurp: src=/root/.ssh/id_rsa.pub
   register: content_encoded
-  tags: [ ocp, prepare_bastion ]
+  tags: [ ocp, prepare_bastion, read_bastion_key ]
 
 - name: "Reading Public Key generated. It's going to be copied to the entire cluster"
   set_fact: bastion_ssh_key="{{ content_encoded.content | b64decode }}"
-  tags: [ ocp, prepare_bastion ]
+  tags: [ ocp, prepare_bastion, read_bastion_key ]
 
 - name: "Generating script to perform all necessary OpenShift installations"
   template: src=install_openshift.sh.j2 dest=/root/install_openshift.sh mode=a+x force=True
@@ -44,8 +44,12 @@
   template: src=ansible_hosts.j2 dest=/etc/ansible/hosts
   tags: [ ocp, prepare_bastion ]
 
-- name: Disable 'host_key_checking' in Ansible
+- name: "Disable 'host_key_checking' in Ansible"
   lineinfile: dest=/etc/ansible/ansible.cfg regexp="host_key_checking" state=present line="host_key_checking = False"
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Enable logging in Ansible"
+  lineinfile: dest=/etc/ansible/ansible.cfg regexp="log_path" state=present line="log_path = /var/log/ansible.log"
   tags: [ ocp, prepare_bastion ]
 
 - name: Create directory "postinstall"

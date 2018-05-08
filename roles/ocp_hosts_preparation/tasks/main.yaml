@@ -19,7 +19,7 @@
 # https://docs.openshift.com/container-platform/3.9/install_config/install/host_preparation.html#ensuring-host-access
 - name: "Copying Bastion SSH Key into all hosts in the cluster"
   lineinfile: dest=/root/.ssh/authorized_keys state=present create=yes line="{{ hostvars[groups.openshift_bastion[0]]['bastion_ssh_key'] }}"
-  tags: [ ocp, prepare_hosts ]
+  tags: [ ocp, prepare_hosts, read_bastion_key ]
 
 - name: "Installing Basic Applications"
   yum: name="{{ item }}" state=present
