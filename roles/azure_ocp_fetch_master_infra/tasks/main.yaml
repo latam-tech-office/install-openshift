@@ -1,0 +1,21 @@
+- name: "MASTER: Fetching Information"
+  azure_rm_virtualmachine: name={{ item.hostname }} location={{ region }}
+                           resource_group={{ name }}
+  with_items: "{{ master_definition }}"
+  register: master_instances
+  tags: [ ocp, azure, fetch, master ]
+
+- name: "MASTER: (First MASTER only) Public IP: {{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: master_public_ip="{{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ ocp, azure, fetch, master ]
+
+- name: "INFRA: Fetching Information"
+  azure_rm_virtualmachine: name={{ item.hostname }} location={{ region }}
+                           resource_group={{ name }}
+  with_items: "{{ infra_definition }}"
+  register: infra_instances
+  tags: [ ocp, azure, fetch, infra ]
+
+- name: "INFRA: (First INFRA only) Public IP: {{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: infra_public_ip="{{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ ocp, azure, fetch, infra ]
