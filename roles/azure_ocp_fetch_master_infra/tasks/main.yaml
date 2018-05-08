@@ -16,6 +16,6 @@
   register: infra_instances
   tags: [ ocp, azure, fetch, infra ]
 
-- name: "INFRA: (First INFRA only) Public IP: {{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
-  set_fact: infra_public_ip="{{ master_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+- name: "INFRA: (First INFRA only) Public IP: {{ infra_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: infra_public_ip="{{ infra_instances.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
   tags: [ ocp, azure, fetch, infra ]
