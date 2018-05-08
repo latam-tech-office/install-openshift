@@ -25,7 +25,7 @@ This file contains all the necessary information you might need to have a basic 
 cloud_provider: azure
 
 name: openshift
-region: us-east1
+region: eastus
 labels:
    host: openshift
 
@@ -38,18 +38,21 @@ openshift_cloudapps_url: cloudapps.example.com
 redhat_subscription_username: myuser
 redhat_subscription_password: mysecret
 
-gce_credentials_file: /root/demo/somefile.json
-gce_project_id: myproject
-gce_service_account_email: myuser@myproject.iam.gserviceaccount.com
+azure_subscription_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+azure_tenant: yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+azure_client_id: zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz
+azure_secret: wwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww
 
-bastion_definition: { hostname: "openshift-bastion", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 100 }
+bastion_definition: { hostname: "openshift-bastion", machine: "Standard_D4_v3", disk_type: "pd-standard", disk_size: 100 }
 master_definition:
-   - { hostname: "openshift-master1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 100, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-master1", machine: "Standard_D8_v3", disk_type: "pd-standard", disk_size: 100, disk_docker_size: 20, disk_docker_type: "pd-standard" }
 infra_definition:
-   - { hostname: "openshift-infra1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-infra1", machine: "Standard_D4_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
 node_definition:
-   - { hostname: "openshift-node1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-   - { hostname: "openshift-node2", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-node1", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-node2", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-node3", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+   - { hostname: "openshift-node4", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
 ```
 
 ## Step #1: Networking 
