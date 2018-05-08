@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Setup a Persistence Volume (PV) on Server{{ ':' }} {{ nfs_server }} at {{ nfs_path_prefix }} 
+- name: "Setup a Persistence Volume (PV) on Server: {{ nfs_server }} at {{ nfs_path_prefix }}" 
   hosts: localhost
   connection: local
   vars:
