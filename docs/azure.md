@@ -21,7 +21,7 @@ Besides that, it's important to have available
 $ pip install ansible[azure]
 ```
 
-## Setup file: ** openshift.config **
+## Setup file: openshift.config
 
 This file contains all the necessary information you might need to have a basic cluster. Here is a example of the contents of this file:
 ```yaml
@@ -57,3 +57,43 @@ node_definition:
    - { hostname: "openshift-node3", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
    - { hostname: "openshift-node4", machine: "Standard_D2_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
 ```
+
+## Step #1: Networking 
+
+Now, all you need to do, it's to run the Ansible's playbooks that it will create everything automatically. The first step will create all the necessary networking capabilities on Azure:
+
+```bash
+$  ./step1_create_network.yaml
+```
+
+## Step #2: Computing 
+
+Once the networking is ready, you may proceed with the creation of all the necessary computing capabilities in order to deploy the whole cluster
+
+```bash
+$ ./step2_create_computing.yaml
+```
+
+## Step #3: OpenShift Installation
+
+The last step, will start the installation of OpenShift 
+
+```bash
+$ ./step3_install_openshift.sh
+```
+## Deleting All
+
+After you've done using your OpenShift Container Platform, you can get rid of everything by running
+
+```bash
+$ ansible-playbook delete_all.yaml
+```
+
+This will delete all the instances, storage and networking that was associated with your cluster
+
+
+
+
+
+
+
