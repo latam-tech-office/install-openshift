@@ -15,7 +15,7 @@ Besides that, it's important to have available
 * Ansible (latest: version 2.5)
 * Ansible's Module for Azure 
 ```
-pip install ansible[azure]
+$ pip install ansible[azure]
 ```
 
 a_b_c
