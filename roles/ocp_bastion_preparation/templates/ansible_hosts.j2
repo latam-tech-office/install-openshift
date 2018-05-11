@@ -1,153 +1,72 @@
-# Create an OSEv3 group that contains the masters and nodes groups
 [OSEv3:children]
 masters
 nodes
 etcd
-#nfs
-#glusterfs
 
-# Set variables common for all OSEv3 hosts
+[masters]
+{% for master in master_definition %}
+{{ master.hostname }} openshift_public_hostname={{ openshift_master_url }}
+{% endfor %}
+
+[nodes]
+{% for master in master_definition %}
+{{ master.hostname }} openshift_node_labels="{'host': 'master'}"
+{% endfor %}
+{% for infra in infra_definition %}
+{{ infra.hostname }} openshift_node_labels="{'host': 'infra'}"
+{% endfor %}
+{% for node in node_definition %}
+{{ node.hostname }} openshift_node_labels="{'host': 'apps'}"
+{% endfor %}
+
+[etcd]
+{% for master in master_definition %}
+{{ master.hostname }}
+{% endfor %}
+openshift-master1
+
 [OSEv3:vars]
+deployment_type=openshift-enterprise
+
+# Disable some checks before installing
+openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability,package_version
+
+# Configuring Cluster Logging
+# https://docs.openshift.com/container-platform/3.7/install_config/install/advanced_install.html#advanced-install-cluster-logging
+openshift_logging_install_logging=true
+
 # SSH user, this user should allow ssh based auth without requiring a password
 ansible_ssh_user=root
 
-# To deploy origin, change deployment_type to origin
-deployment_type=openshift-enterprise
+# Have all Template Broker to be install on Infra Node
+template_service_broker_selector={"host":"infra"}
 
-openshift_clock_enabled=true
-# Disabling for smaller instances used for Demo purposes. Use instances with minimum disk and memory sizes required by OpenShift
-openshift_disable_check=disk_availability,memory_availability,docker_image_availability,docker_storage
-openshift_template_service_broker_namespaces=['openshift']
-#Enable service catalog
-openshift_enable_service_catalog=true
-## Enable template service broker (requires service catalog to be enabled, above)
-template_service_broker_install=true
-template_service_broker_selector={"region":"infra"}
-ansible_service_broker_local_registry_whitelist=['.*-apb$']
-
-openshift_master_default_subdomain={{ openshift_cloudapps_url }}
-openshift_hosted_router_selector='region=infra'
-openshift_hosted_registry_selector='region=infra'
-openshift_install_examples=true
-openshift_docker_insecure_registries=172.30.0.0/16
-#openshift_hosted_registry_storage_nfs_directory=/exports
-
-#cloudforms
-#openshift_management_install_management=true
-#openshift_management_install_beta=true
-#openshift_management_app_template=cfme-template
-#openshift_management_project=openshift-management
-#openshift_management_storage_class=preconfigured
-
-# Enable cluster metrics
-openshift_metrics_install_metrics=true
-openshift_metrics_cassandra_storage_type=dynamic
-openshift_metrics_hawkular_hostname=hawkular-metrics.{{ openshift_cloudapps_url }}
-openshift_metrics_image_version=v3.9.14
-openshift_metrics_hawkular_nodeselector={'region': 'infra'}
-openshift_metrics_cassandra_nodeselector={'region': 'infra'}
-openshift_metrics_heapster_nodeselector={'region': 'infra'}
-
-
-# Logging
-openshift_logging_install_logging=true
-#openshift_logging_storage_kind=nfs
-#openshift_logging_storage_access_modes=['ReadWriteOnce']
-#openshift_logging_storage_nfs_directory=/exports
-#openshift_logging_storage_nfs_options='*(rw,root_squash)'
-#openshift_logging_storage_volume_name=logging-es
-#openshift_logging_storage_volume_size=30Gi
-#openshift_logging_storage_labels={'storage': 'logging'}
-#openshift_logging_es_cluster_size=1
-#openshift_logging_es_memory_limit=2Gi
-
-
-# Registry
-openshift_hosted_manage_router=true
-openshift_hosted_manage_registry=true
-# openshift_hosted_registry_storage_kind=nfs
-# openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-# openshift_hosted_registry_storage_nfs_directory=/exports
-# openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
-# openshift_hosted_registry_storage_volume_name=registry
-# openshift_hosted_registry_storage_volume_size=30Gi
-
-
-## Currently prometheus deployment is disabled by default, enable it by setting this
-#openshift_prometheus_namespace=openshift-metrics
-#openshift_hosted_prometheus_deploy=true
-#openshift_prometheus_storage_kind=none
-#openshift_prometheus_storage_access_modes=['ReadWriteOnce']
-#openshift_prometheus_storage_nfs_directory=/exports
-##openshift_prometheus_storage_nfs_options='*(rw,root_squash)'
-#openshift_prometheus_storage_volume_name=prometheus
-#openshift_prometheus_storage_volume_size=10Gi
-#openshift_prometheus_storage_labels={'storage': 'prometheus'}
-#openshift_prometheus_storage_type='pvc'
-#openshift_prometheus_storage_class='emptydir'
-## For prometheus-alertmanager
-#openshift_prometheus_alertmanager_storage_kind=none
-#openshift_prometheus_alertmanager_storage_access_modes=['ReadWriteOnce']
-#openshift_prometheus_alertmanager_storage_nfs_directory=/exports
-#openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
-#openshift_prometheus_alertmanager_storage_volume_size=10Gi
-#openshift_prometheus_alertmanager_storage_labels={'storage': 'prometheus-alertmanager'}
-#openshift_prometheus_alertmanager_storage_type='pvc'
-#openshift_prometheus_alertmanager_storage_class='emptydir'
-## For prometheus-alertbuffer
-#openshift_prometheus_alertbuffer_storage_kind=none
-#openshift_prometheus_alertbuffer_storage_access_modes=['ReadWriteOnce']
-#openshift_prometheus_alertbuffer_storage_nfs_directory=/exports
-#openshift_prometheus_alertbuffer_storage_nfs_options='*(rw,root_squash)'
-#openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
-#openshift_prometheus_alertbuffer_storage_volume_size=10Gi
-#openshift_prometheus_alertbuffer_storage_labels={'storage': 'prometheus-alertbuffer'}
-#openshift_prometheus_alertbuffer_storage_type='pvc'
-#openshift_prometheus_alertbuffer_storage_class='emptydir'
-
-# enable htpasswd authentication
-openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/openshift/openshift-passwd'}]
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/openshift-passwords'}]
 
 #### # Defining htpasswd users
 openshift_master_htpasswd_users={'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0', 'mauricio': '$apr1$cUEhxniK$.dvXBcd9XE6BmSpeWnb2o.'}
 
-#glusterfs
-#openshift_storage_glusterfs_namespace=glusterfs
-#openshift_storage_glusterfs_name=storage
-#openshift_storage_glusterfs_heketi_wipe=true
-#openshift_storage_glusterfs_storageclass_default=true
-# This is by default 100G...should be set to something lower for POCs
-#openshift_storage_glusterfs_block_host_vol_size=30
+#### Router selector (optional)
+#### # Router will only be created if nodes matching this label are present.
+#### # Default value: 'region=infra'
+openshift_hosted_router_selector='host=infra'
+openshift_router_selector='host=infra'
 
-# host group for masters
-[masters]
-{% for master in master_definition %}
-{{ master.hostname }}
-{% endfor %}
+#### default subdomain to use for exposed routes
+openshift_master_default_subdomain={{ openshift_cloudapps_url }}
 
-#[nfs]
-#{% for master in master_definition %}
-#{{ master.hostname }} 
-#{% endfor %}
+openshift_hosted_registry_selector='host=infra'
+openshift_registry_selector='host=infra'
 
-[etcd]
-{% for master in master_definition %}
-{{ master.hostname }} 
-{% endfor %}
+# Registry replicas (optional)
+# Unless specified, openshift-ansible will calculate the replica count
+# based on the number of nodes matching the openshift registry selector.
+openshift_hosted_registry_replicas=1
 
-# host group for nodes, includes region info
-[nodes]
-{% for master in master_definition %}
-{{ master.hostname }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_scheduleable=true openshift_public_hostname={{ openshift_master_url }} 
-{% endfor %}
-{% for infra in infra_definition %}
-{{ infra.hostname }} openshift_node_labels="{'region': 'infra'}"
-{% endfor %}
-{% for node in node_definition %}
-{{ node.hostname }} openshift_node_labels="{'region': 'apps'}"
-{% endfor %}
+# Disable management of the OpenShift Registry
+#openshift_hosted_manage_registry=false
 
-#[glusterfs]
-#10.0.0.5 glusterfs_ip=10.0.0.5 glusterfs_zone=1 glusterfs_devices='[ "/dev/sdd" ]'
-#10.0.0.6 glusterfs_ip=10.0.0.6 glusterfs_zone=2 glusterfs_devices='[ "/dev/sdd" ]'
-#10.0.0.7 glusterfs_ip=10.0.0.7 glusterfs_zone=3 glusterfs_devices='[ "/dev/sdd" ]'
+#### Metrics deployment
+#### # See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
+openshift_metrics_install_metrics=True
+openshift_metrics_hawkular_hostname=hawkular-metrics.{{ openshift_cloudapps_url }}
