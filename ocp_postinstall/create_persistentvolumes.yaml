@@ -164,7 +164,7 @@
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
       tags: [ create ]
 
-    - name: "Restart IPTables Service
+    - name: "Restart IPTables Service"
       service: name=iptables state=restarted
       notify: Restart IPTables Service
       tags: [ create ]
