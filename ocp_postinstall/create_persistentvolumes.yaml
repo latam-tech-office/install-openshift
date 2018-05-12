@@ -1,8 +1,8 @@
 #!/usr/bin/env ansible-playbook
 ---
 - name: "Setup a Persistence Volume (PV) on Server: {{ nfs_server }} at {{ nfs_path_prefix }}" 
-  hosts: localhost
-  connection: local
+  hosts: openshift_master_group
+  become: True
   vars:
     persistent_volumes:
        - { pv_index: 1, "type": "tiny",    pv_size: 1 }
@@ -127,36 +127,34 @@
        - { pv_index: 110, "type": "huge",   pv_size: 50 }
     nfs_server: 192.168.0.100
     nfs_path_prefix: /var/storage/local
+    rhmap_special_pv: False
   tasks:
-    - name: Installing all the necessary NFS Utils package
+    - name: "Installing all the necessary NFS Utils package"
       yum: name=nfs-utils state=latest
-      tags:
-         - create
+      tags: [ create ]
 
-    - name: Create directory for NFS Exports
+    - name: "Create directory for NFS Exports"
       file: path={{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
       with_items: "{{ persistent_volumes }}"
-      tags:
-         - create
+      tags: [ create ]
 
-    - name: Create directory for NFS Exports{{ ':' }} RHMAP/gitlab-shell based on https{{ ':' }}//access.redhat.com/solutions/2919671
+    - name: "RHMAP: Create directory for NFS Exports: gitlab-shell based on https://access.redhat.com/solutions/2919671"
       file: path={{ nfs_path_prefix }}-gitlab-shell group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
-      tags:
-         - create
+      when: rhmap_special_pv is defined and rhmap_special_pv | bool
+      tags: [ create, rhmap ]
 
-    - name: Create all the necessary information in /etc/exports
+    - name: "Create all the necessary information in /etc/exports"
       lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} *(rw,root_squash,no_wdelay)"
       with_items: "{{ persistent_volumes }}"
-      tags:
-         - create
+      tags: [ create ]
 
-    - name: Special custom taylored for RHMAP/gitlab-shell on /etc/exports{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
+    - name: "RHMAP: Special custom taylored for RHMAP/gitlab-shell on /etc/exports: https://access.redhat.com/solutions/2919671"
       lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}-gitlab-shell *(rw,no_root_squash,no_wdelay)"
-      tags:
-         - create
+      when: rhmap_special_pv is defined and rhmap_special_pv | bool
+      tags: [ create, rhmap ]
 
 
-    - name: Add the following lines into the IPTables rules for NFS
+    - name: "Add the following lines into the IPTables rules for NFS"
       lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line="{{ item }}"
       with_items: 
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 111 -j ACCEPT"
@@ -164,22 +162,19 @@
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
-      tags: 
-         - iptables
+      tags: [ create ]
 
-    - name: Restart IPTables Service
+    - name: "Restart IPTables Service
       service: name=iptables state=restarted
       notify: Restart IPTables Service
-      tags: 
-         - iptables
+      tags: [ create ]
 
-    - name: Modify information into NFS file
+    - name: "Modify information into NFS file"
       lineinfile: dest=/etc/sysconfig/nfs state=present regexp={{ item.regex }} line={{ item.option }}
       with_items:
          - { regex: "^RPCMOUNTDOPTS", option: "RPCMOUNTDOPTS=\"-p 20048\""}
          - { regex: "^STATDARG",      option: "STATDARG=\"-p 50825\""}
-      tags:
-         - nfs
+      tags: [ create ]
 
 # Bug according to: https://access.redhat.com/solutions/2200331
 #    - name: Modify information on sysctl
@@ -191,47 +186,43 @@
 #    - name: Persist the changes for sysctl
 #      command: sysctl -p
 
-    - name: Restart all the necessary services related to NFS
+    - name: "Restart all the necessary services related to NFS"
       service: name={{ item }}  state=restarted enabled=true
       with_items:
          - rpcbind
          - nfs-server
          - nfs-lock 
          - nfs-idmap
+      tags: [ create ]
      
-    - name: Template all the necessary Persistent Volumes in a temporary directory
+    - name: "Template all the necessary Persistent Volumes in a temporary directory"
       template: src=templates/persistentvolume.yaml.j2 dest=/tmp/persistentvolume.yaml
-      tags: 
-         - pv_yaml
+      tags: [ create ]
 
-    - name: Template a Persistent Volume for Gitlab-Shell{{ ':' }} https{{ ':' }}//access.redhat.com/solutions/2919671
-      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/root/postinstall/persistentvolume-gitlab-shell.yaml
-      tags:
-         - pv_yaml 
-         - pv_yaml_gitlab
+    - name: "RHMAP: Template a Persistent Volume for Gitlab-Shell: https://access.redhat.com/solutions/2919671"
+      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/tmp/persistentvolume-gitlab-shell.yaml
+      when: rhmap_special_pv is defined and rhmap_special_pv | bool
+      tags: [ create, rhmap ]
 
-    - name: Change to administrator user in OpenShift
+    - name: "Change to administrator user in OpenShift"
       command: oc login --username=system:admin
-      tags:
-         - pv_yaml
+      tags: [ create ]
 
-    - name: Delete all existing PV's before creating
+    - name: "Delete all existing PV's before creating"
       command: oc delete pv --all
       ignore_errors: True
-      tags:
-         - pv_yaml
+      tags: [ create ]
 
-    - name: Create the PV's from a temporary directory
+    - name: "Create the PV's from a temporary directory"
       command: oc create -f /tmp/persistentvolume.yaml
-      tags:
-         - pv_yaml
+      tags: [ create ]
 
-#    - name: Create PV for Gitlab Shell
-#      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
-#      tags:
-#         - pv_yaml
-#         - pv_yaml_gitlab
+    - name: "RHMAP: Create PV for Gitlab Shell"
+      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
+      when: rhmap_special_pv is defined and rhmap_special_pv | bool
+      tags: [ create, rhmap ]
 
   handlers:
-    - name: Restart IPTables Service
+    - name: "Restart IPTables Service"
       service: name=iptables state=restarted
+      tags: [ create ]
