@@ -56,6 +56,10 @@
   file: path=/root/postinstall/templates state=directory
   tags: [ ocp, prepare_bastion ]
 
+- name: "Generate inventory for postinstalling"
+  template: src=hosts_postinstall.j2 dest=/root/postinstall/hosts_postinstall force=True
+  tags: [ ocp, prepare_bastion ]
+
 - name: Download all the necessary playbooks for post install
   uri: url=https://raw.githubusercontent.com/maltron/testazure/master/ocp_postinstall/{{ item }}
        method=GET status_code=200 creates=True dest=/root/postinstall/{{ item }}
