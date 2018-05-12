@@ -61,7 +61,7 @@
   tags: [ ocp, prepare_bastion ]
 
 - name: Download all the necessary playbooks for post install
-  uri: url=https://raw.githubusercontent.com/maltron/testazure/master/ocp_postinstall/{{ item }}
+  uri: url=https://raw.githubusercontent.com/latam-tech-office/install-openshift/master/ocp_postinstall/{{ item }}
        method=GET status_code=200 creates=True dest=/root/postinstall/{{ item }}
   with_items:
      - create_persistentvolumes.yaml
