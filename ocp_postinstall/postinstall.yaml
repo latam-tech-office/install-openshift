@@ -36,3 +36,4 @@
        with_items:
           - asb-etcd
           - asb
+       ignore_errors: True
