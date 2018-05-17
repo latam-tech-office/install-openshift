@@ -11,10 +11,10 @@ These playbooks relies on some specific Ansible modules. Regardless what cloud p
 
 1. [Ansible Azure Preview's Role](https://github.com/Azure/azure_preview_modules)
 ```
-$ ansible-galaxy install Azure.azure_preview_modules
+$ ansible-galaxy install git+https://github.com/Azure/azure_preview_modules.git,nic-bugfix
 ```
 
 2. Upgrade Azure Python SDKs required by new Azure modules
 ```
-$ pip install -r ~/.ansible/roles/Azure.azure_preview_modules/files/requirements-azure.txt
+$ pip install -r ~/.ansible/roles/azure_preview_modules/files/requirements-azure.txt
 ```
