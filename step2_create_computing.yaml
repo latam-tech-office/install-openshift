@@ -38,7 +38,7 @@
        when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
        tags: [ always ]
   roles:
-     - { role: Azure.azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
+     - { role: azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
      - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
      - { role: "{{ cloud_provider }}_ocp_compute" }
      - { role: gce_cloud_dns }
