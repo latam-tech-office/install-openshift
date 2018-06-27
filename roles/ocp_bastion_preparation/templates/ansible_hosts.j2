@@ -69,3 +69,10 @@ openshift_hosted_registry_replicas=1
 #### # See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
 openshift_metrics_install_metrics=True
 openshift_metrics_hawkular_hostname=hawkular-metrics.{{ openshift_cloudapps_url }}
+
+# Fix a bug on OCP 3.9.30
+oreg_url=registry.access.redhat.com/openshift3/ose-${component}:${version}
+openshift_storage_glusterfs_heketi_image=registry.access.redhat.com/rhgs3/rhgs-volmanager-rhel7
+openshift_storage_glusterfs_image=registry.access.redhat.com/rhgs3/rhgs-server-rhel7
+openshift_storage_glusterfs_block_image=registry.access.redhat.com/rhgs3/rhgs-gluster-block-prov-rhel7
+openshift_storage_glusterfs_s3_image=registry.access.redhat.com/rhgs3/rhgs-gluster-s3-server-rhel7
