@@ -9,3 +9,5 @@ ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/postin
 {% if default_slack_token is defined and default_slack_token is not none %}
 ansible localhost -m slack -a "token={{ default_slack_token }} msg='{{ message_when_ready }}'"
 {% endif %}
+/root/postinstall/install_eclipse_che.sh
+/root/postinstall/install_bluegreen_canary.sh

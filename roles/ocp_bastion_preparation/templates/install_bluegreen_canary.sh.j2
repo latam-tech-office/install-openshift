@@ -1,0 +1,8 @@
+oc login --username=demo --password=r3dh4t1! --insecure-skip-tls-verify --server=https://{{ openshift_master_url }}:8443
+oc new-project tooling --display-name="Developer Tooling"
+oc new-project bluegreen-example --display-name="Blue-Green Deployment Example"
+oc new-project canary-example --display-name="Canary Deployment Example"
+git clone https://github.com/latam-tech-office/openshift-utils
+pushd openshift-utils/deployment_strategies/
+ansible-playbook install_bluegreen_canary_deployments.yaml -e cloudapps={{ openshift_cloudapps_url }}
+popd

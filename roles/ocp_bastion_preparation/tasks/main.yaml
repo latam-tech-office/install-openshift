@@ -22,7 +22,9 @@
   tags: [ ocp, prepare_bastion, read_bastion_key ]
 
 - name: "Generating script to perform all necessary OpenShift installations"
-  template: src=install_openshift.sh.j2 dest=/root/install_openshift.sh mode=a+x force=True
+  template: src={{ item }}.j2 dest=/root/{{ item }} mode=a+x force=True
+  with_items: 
+      - install_openshift.sh
   tags: [ ocp, prepare_bastion ]
 
 - name: "LOCAL: Generating script (aka STEP #3) locally to start installation"
@@ -54,6 +56,13 @@
 
 - name: Create directory "postinstall"
   file: path=/root/postinstall/templates state=directory
+  tags: [ ocp, prepare_bastion ]
+
+- name: "Generating script to perform some post installations"
+  template: src={{ item }}.j2 dest=/root/postinstall/{{ item }} mode=a+x force=True
+  with_items:
+      - install_eclipse_che.sh
+      - install_bluegreen_canary.sh
   tags: [ ocp, prepare_bastion ]
 
 - name: "Generate inventory for postinstalling"

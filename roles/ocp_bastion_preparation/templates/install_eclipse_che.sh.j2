@@ -1,0 +1,6 @@
+oc login --username=demo --password=r3dh4t1! --insecure-skip-tls-verify --server=https://{{ openshift_master_url }}:8443
+oc new-project che --display-name="Eclipse Che"
+git clone https://github.com/latam-tech-office/openshift-utils
+pushd openshift-utils/eclipseche/
+ansible-playbook install-eclipse-che.yaml -e che_routing_suffix={{ openshift_cloudapps_url }}
+popd
