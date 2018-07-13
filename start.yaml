@@ -1,0 +1,10 @@
+---
+- name: Starting OpenShift Cluster
+  hosts: localhost
+  connection: local
+  become: True
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_start" }
