@@ -1,0 +1,25 @@
+- name: "AWS Route53 DNS: Zone: {{ aws_route53_zone }} MASTER: {{ openshift_master_url }} = {{ master_public_ip }}"
+  route53:
+      state=present
+      overwrite=yes
+      zone={{ aws_route53_zone }}
+      record={{ openshift_master_url }}
+      type=A
+      ttl=300
+      value={{ master_public_ip }}
+      wait=yes
+  tags: [ ocp, aws, aws_route53 ]
+  when: aws_route53_zone is defined and aws_route53_zone is not none
+
+- name: "AWS Route53 DNS: Zone: {{ aws_route53_zone }} INFRA: *.{{ openshift_cloudapps_url }} = {{ infra_public_ip }}"
+  route53:
+      state=present
+      overwrite=yes
+      zone={{ aws_route53_zone }}
+      record="*.{{ openshift_cloudapps_url }}"
+      type=A
+      ttl=300
+      value={{ infra_public_ip }}
+      wait=yes
+  tags: [ ocp, aws, aws_route53 ]
+  when: aws_route53_zone is defined and aws_route53_zone is not none

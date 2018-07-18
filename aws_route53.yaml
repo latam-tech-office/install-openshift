@@ -1,0 +1,26 @@
+---
+- name: "AWS Route 53 DNS: Fetching OpenShift's IP and updating into a Zone"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  pre_tasks:
+     - name: "Check Parameter: aws_route53_zone"
+       fail: msg="aws_route53_zone is not defined or is empty"
+       when: aws_route53_zone is not defined or aws_route53_zone is none
+       tags: [ always ]
+
+     - name: "Check Parameter: openshift_master_url"
+       fail: msg="openshift_master_url not defined or is empty"
+       when: openshift_master_url is not defined or openshift_master_url is none
+       tags: [ always ]
+
+     - name: "Check Parameter: openshift_cloudapps_url"
+       fail: msg="openshift_cloudapps_url is not defined or is empty"
+       when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
+       tags: [ always ]
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_fetch_master_infra" }
+     - { role: aws_route53 }
