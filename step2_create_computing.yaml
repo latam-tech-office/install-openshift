@@ -42,6 +42,7 @@
      - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
      - { role: "{{ cloud_provider }}_ocp_compute" }
      - { role: gce_cloud_dns }
+     - { role: aws_route53 }
 
 - name: "ALL: Applying Red Hat Subscription"
   hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
