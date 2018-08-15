@@ -10,13 +10,13 @@ etcd
 
 [nodes]
 {% for master in master_definition %}
-{{ master.hostname }} openshift_node_labels="{'host': 'master'}"
+{{ master.hostname }} openshift_node_labels="{'host': 'master'}" openshift_node_group_name=node-config-master
 {% endfor %}
 {% for infra in infra_definition %}
-{{ infra.hostname }} openshift_node_labels="{'host': 'infra'}"
+{{ infra.hostname }} openshift_node_labels="{'host': 'infra'}" openshift_node_group_name=node-config-infra
 {% endfor %}
 {% for node in node_definition %}
-{{ node.hostname }} openshift_node_labels="{'host': 'apps'}"
+{{ node.hostname }} openshift_node_labels="{'host': 'apps'}"   openshift_node_group_name=node-config-compute
 {% endfor %}
 
 [etcd]
@@ -26,6 +26,7 @@ etcd
 
 [OSEv3:vars]
 deployment_type=openshift-enterprise
+openshift_examples_modify_imagestreams=true
 
 # Disable some checks before installing
 openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability,package_version
@@ -40,7 +41,7 @@ ansible_ssh_user=root
 # Have all Template Broker to be install on Infra Node
 template_service_broker_selector={"host":"infra"}
 
-openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/openshift-passwords'}]
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 
 #### # Defining htpasswd users
 openshift_master_htpasswd_users={'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0', 'mauricio': '$apr1$cUEhxniK$.dvXBcd9XE6BmSpeWnb2o.'}
