@@ -10,13 +10,13 @@ etcd
 
 [nodes]
 {% for master in master_definition %}
-{{ master.hostname }} openshift_node_labels="{'host': 'master'}" openshift_node_group_name=node-config-master
+{{ master.hostname }} openshift_node_group_name=node-config-master
 {% endfor %}
 {% for infra in infra_definition %}
-{{ infra.hostname }} openshift_node_labels="{'host': 'infra'}" openshift_node_group_name=node-config-infra
+{{ infra.hostname }} openshift_node_group_name=node-config-infra
 {% endfor %}
 {% for node in node_definition %}
-{{ node.hostname }} openshift_node_labels="{'host': 'apps'}"   openshift_node_group_name=node-config-compute
+{{ node.hostname }} openshift_node_group_name=node-config-compute
 {% endfor %}
 
 [etcd]
@@ -39,7 +39,7 @@ openshift_logging_install_logging=true
 ansible_ssh_user=root
 
 # Have all Template Broker to be install on Infra Node
-template_service_broker_selector={"host":"infra"}
+template_service_broker_selector={"node-role.kubernetes.io/infra":"true"}
 
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 
@@ -49,14 +49,14 @@ openshift_master_htpasswd_users={'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0'
 #### Router selector (optional)
 #### # Router will only be created if nodes matching this label are present.
 #### # Default value: 'region=infra'
-openshift_hosted_router_selector='host=infra'
-openshift_router_selector='host=infra'
+openshift_hosted_router_selector='node-role.kubernetes.io/infra=true'
+openshift_router_selector='node-role.kubernetes.io/infra=true'
 
 #### default subdomain to use for exposed routes
 openshift_master_default_subdomain={{ openshift_cloudapps_url }}
 
-openshift_hosted_registry_selector='host=infra'
-openshift_registry_selector='host=infra'
+openshift_hosted_registry_selector='node-role.kubernetes.io/infra=true'
+openshift_registry_selector='node-role.kubernetes.io/infra=true'
 
 # Registry replicas (optional)
 # Unless specified, openshift-ansible will calculate the replica count
