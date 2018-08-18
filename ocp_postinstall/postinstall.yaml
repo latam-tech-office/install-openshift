@@ -2,38 +2,35 @@
 - name: "Performing operations just after an OpenShift's installation is done"
   hosts: openshift_master_group
   become: True
+  vars:
+     selector_compute: "node-role.kubernetes.io/compute=true"
+     selector_infra: "node-role.kubernetes.io/infra=true"
   tasks:
-     - name: "Modify configuration in Master, so all Pods will be create in host=apps"
-       lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "host=apps"'
+     - name: "Modify configuration in Master, so all Pods will be create in {{ selector_compute }}"
+       lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "{{ selector_compute }}"'
+       notify: "OpenShift Master Restart"
+
+     - name: Removing nodeSelector on registry-console
+       command: "oc patch deploymentconfig/registry-console --type=json --patch='[{\"op\":\"remove\", \"path\":\"/spec/template/spec/nodeSelector\"}]' --namespace default"
+
+     - name: "Adding a nodeSelector into registry-console: {{ selector_infra }}"
+       command: "oc patch deploymentconfig/registry-console --patch='{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"node-role.kubernetes.io/infra\": \"true\"}}}}}' --namespace default"
 
      - name: "All pods in Project Default must run on Infra Host"
-       command: "oc patch namespace/default --patch '{\"metadata\": {\"name\":\"default\",\"annotations\":{\"openshift.io/node-selector\": \"host=infra\"}}}'"
+       command: "oc patch namespace/default --patch '{\"metadata\": {\"name\":\"default\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
 
      - name: "Recreate Pods in Project Default"
        command: oc delete pods --all --namespace default
 
      - name: "All pods in Project OpenShift Infra must run on Infra Host"
-       command: "oc patch namespace/openshift-infra --patch '{\"metadata\": {\"name\":\"openshift-infra\",\"annotations\":{\"openshift.io/node-selector\": \"host=infra\"}}}'"
+       command: "oc patch namespace/openshift-infra --patch '{\"metadata\": {\"name\":\"openshift-infra\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
 
      - name: "Recreate Pods in Project Openshift-Infra"
        command: oc delete pods --all --namespace openshift-infra
 
-     - name: "Restart OpenShift's Master"
-       service: name={{ item }} state=restarted
-       with_items:
-          - atomic-openshift-master-api
-          - atomic-openshift-master-controllers
-
-     - name: "Canceling any openshift-ansible-service-broker deployment"
-       command: oc rollout cancel dc/{{ item }} --namespace openshift-ansible-service-broker
-       with_items:
-          - asb-etcd
-          - asb
-       ignore_errors: True
-
-     - name: "openshift-ansible-service-broker: Make sure it's running"
-       command: oc rollout latest dc/{{ item }} --namespace openshift-ansible-service-broker
-       with_items:
-          - asb-etcd
-          - asb
-       ignore_errors: True
+  handlers: 
+     - name: OpenShift Master Restart 
+       command: master-restart {{ item }} 
+       with_items: 
+          - api
+          - controllers
