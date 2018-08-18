@@ -138,21 +138,11 @@
       with_items: "{{ persistent_volumes }}"
       tags: [ create ]
 
-    - name: "RHMAP: Create directory for NFS Exports: gitlab-shell based on https://access.redhat.com/solutions/2919671"
-      file: path={{ nfs_path_prefix }}-gitlab-shell group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
-      when: rhmap_special_pv is defined and rhmap_special_pv | bool
-      tags: [ create, rhmap ]
-
     - name: "Create all the necessary information in /etc/exports"
       lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}{{ item.pv_index  }}-{{ item.pv_size }}g-{{ item.type }} *(rw,root_squash,no_wdelay)"
       with_items: "{{ persistent_volumes }}"
+      notify: "Restart all the necessary services related to NFS"
       tags: [ create ]
-
-    - name: "RHMAP: Special custom taylored for RHMAP/gitlab-shell on /etc/exports: https://access.redhat.com/solutions/2919671"
-      lineinfile: dest=/etc/exports line="{{ nfs_path_prefix }}-gitlab-shell *(rw,no_root_squash,no_wdelay)"
-      when: rhmap_special_pv is defined and rhmap_special_pv | bool
-      tags: [ create, rhmap ]
-
 
     - name: "Add the following lines into the IPTables rules for NFS"
       lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line="{{ item }}"
@@ -162,10 +152,6 @@
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
-      tags: [ create ]
-
-    - name: "Restart IPTables Service"
-      service: name=iptables state=restarted
       notify: Restart IPTables Service
       tags: [ create ]
 
@@ -174,35 +160,12 @@
       with_items:
          - { regex: "^RPCMOUNTDOPTS", option: "RPCMOUNTDOPTS=\"-p 20048\""}
          - { regex: "^STATDARG",      option: "STATDARG=\"-p 50825\""}
+      notify: "Restart all the necessary services related to NFS"
       tags: [ create ]
 
-# Bug according to: https://access.redhat.com/solutions/2200331
-#    - name: Modify information on sysctl
-#      lineinfile: dest=/etc/sysctl.conf state=present line={{ item }}
-#      with_items:
-#         - "fs.nfs.nlm_tcpport=53248"
-#         - "fs.nfs.nlm_udpport=53248"
-#
-#    - name: Persist the changes for sysctl
-#      command: sysctl -p
-
-    - name: "Restart all the necessary services related to NFS"
-      service: name={{ item }}  state=restarted enabled=true
-      with_items:
-         - rpcbind
-         - nfs-server
-         - nfs-lock 
-         - nfs-idmap
-      tags: [ create ]
-     
     - name: "Template all the necessary Persistent Volumes in a temporary directory"
       template: src=templates/persistentvolume.yaml.j2 dest=/tmp/persistentvolume.yaml
       tags: [ create ]
-
-    - name: "RHMAP: Template a Persistent Volume for Gitlab-Shell: https://access.redhat.com/solutions/2919671"
-      template: src=templates/persistentvolume-gitlab-shell.yaml.j2 dest=/tmp/persistentvolume-gitlab-shell.yaml
-      when: rhmap_special_pv is defined and rhmap_special_pv | bool
-      tags: [ create, rhmap ]
 
     - name: "Change to administrator user in OpenShift"
       command: oc login --username=system:admin
@@ -217,12 +180,16 @@
       command: oc create -f /tmp/persistentvolume.yaml
       tags: [ create ]
 
-    - name: "RHMAP: Create PV for Gitlab Shell"
-      command: oc create -f /tmp/persistentvolume-gitlab-shell.yaml
-      when: rhmap_special_pv is defined and rhmap_special_pv | bool
-      tags: [ create, rhmap ]
-
   handlers:
+    - name: "Restart all the necessary services related to NFS"
+      service: name={{ item }}  state=restarted enabled=true
+      with_items:
+         - rpcbind
+         - nfs-server
+         - nfs-lock
+         - nfs-idmap
+      tags: [ create ]
+
     - name: "Restart IPTables Service"
       service: name=iptables state=restarted
       tags: [ create ]
