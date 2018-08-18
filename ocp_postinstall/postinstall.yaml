@@ -6,6 +6,13 @@
      selector_compute: "node-role.kubernetes.io/compute=true"
      selector_infra: "node-role.kubernetes.io/infra=true"
   tasks:
+     - name: Make sure OpenShift's Master is fully functional
+       command: oc login --username=system:admin
+       register: login_admin
+       until: login_admin.rc == 0
+       retries: 120
+       delay: 60
+
      - name: "Modify configuration in Master, so all Pods will be create in {{ selector_compute }}"
        lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "{{ selector_compute }}"'
        notify: "OpenShift Master Restart"
