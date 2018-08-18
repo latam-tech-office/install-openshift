@@ -37,7 +37,7 @@
 
   handlers: 
      - name: OpenShift Master Restart 
-       command: master-restart {{ item }} 
+       command: /usr/local/bin/master-restart {{ item }} 
        with_items: 
           - api
           - controllers
