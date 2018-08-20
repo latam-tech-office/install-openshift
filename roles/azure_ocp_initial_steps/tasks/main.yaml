@@ -18,14 +18,6 @@
   when: azure_secret is not defined or azure_secret is none
   tags: [ azure, ocp, initial, parameter ]
 
-- name: "Creating Resource Group: {{ name }}"
-  azure_rm_resourcegroup: name={{ name }} state=present location={{ region }}
-                          tags={{ labels }}
-                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
-                          client_id={{ azure_client_id }} secret={{ azure_secret }}
-  ignore_errors: True
-  tags: [ azure, ocp, initial, resource_group ]
-
 - name: Creating master_definition
   set_fact: master_definition='{{ master_definition + [ new_item ] }}'
   vars:
