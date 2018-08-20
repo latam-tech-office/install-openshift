@@ -38,7 +38,8 @@
        when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
        tags: [ always ]
   roles:
-#     - { role: Azure.azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
+     - { role: Azure.azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
+     - { role: "{{ cloud_provider }}_ocp_initial_steps" }
      - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
      - { role: "{{ cloud_provider }}_ocp_compute" }
      - { role: gce_cloud_dns }
@@ -47,6 +48,7 @@
 - name: "ALL: Applying Red Hat Subscription"
   hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
   gather_facts: True
+  become: True
   vars_files:
      - openshift.config
   roles:
@@ -59,7 +61,7 @@
   vars_files:
      - openshift.config
   roles: 
-     - { role: ocp_bastion_preparation }
+     - { role: ocp_bastion_preparation, master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
 
 - name: "OPENSHIFT: Preparing Hosts"
   hosts: openshift_master_group, openshift_infra_group, openshift_node_group
@@ -69,7 +71,7 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles: 
-     - { role: ocp_hosts_preparation }
+     - { role: ocp_hosts_preparation, master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
 
 - name: "Final Steps"
   hosts: localhost
@@ -78,5 +80,5 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles:
-     - { role: "{{ cloud_provider }}_ocp_final_steps" }
+     - { role: "{{ cloud_provider }}_ocp_final_steps", master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
 
