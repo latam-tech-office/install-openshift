@@ -68,4 +68,5 @@
 
 - name: "Waiting for Server to come back"
   local_action: wait_for host={{ inventory_hostname }} port=22 delay=30 timeout=600 state=started
+  become: False
   tags: [ ocp, redhat_subscription, reboot ]
