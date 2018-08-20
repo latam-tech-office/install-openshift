@@ -7,5 +7,6 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles:
+     - { role: "{{ cloud_provider }}_ocp_initial_steps" }
      - { role: "{{ cloud_provider }}_ocp_delete_hosts" }
      - { role: "{{ cloud_provider }}_ocp_delete_all" }
