@@ -44,7 +44,7 @@ template_service_broker_selector={"node-role.kubernetes.io/infra":"true"}
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 
 #### # Defining htpasswd users
-openshift_master_htpasswd_users={'{{ openshift_username }}': '{{ openshift_password }}', 'mauricio': '$apr1$cUEhxniK$.dvXBcd9XE6BmSpeWnb2o.'}
+openshift_master_htpasswd_users={{ openshift_users }}
 
 #### Router selector (optional)
 #### # Router will only be created if nodes matching this label are present.
