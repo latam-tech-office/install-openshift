@@ -25,3 +25,24 @@
                           client_id={{ azure_client_id }} secret={{ azure_secret }}
   ignore_errors: True
   tags: [ azure, ocp, initial, resource_group ]
+
+- name: Creating master_definition
+  set_fact: master_definition='{{ master_definition + [ new_item ] }}'
+  vars:
+     new_item: "{ 'hostname' : '{{ master_prefix }}{{ item }}', 'machine' : '{{ master_machine_type }}', 'disk_type' : '{{ master_disk_type }}', 'disk_size' : {{ master_disk_size }}, 'disk_docker_type' : '{{ master_docker_type }}', 'disk_docker_size' : {{ master_docker_size }} }"
+  with_sequence: start=1 end="{{ number_of_masters }}"
+  tags: [ azure, ocp, initial, resource_group ]
+
+- name: Creating infra_definition
+  set_fact: infra_definition='{{ infra_definition + [ new_item ] }}'
+  vars:
+     new_item: "{ 'hostname' : '{{ infra_prefix }}{{ item }}', 'machine' : '{{ infra_machine_type }}', 'disk_type' : '{{ infra_disk_type }}', 'disk_size' : {{ infra_disk_size }}, 'disk_docker_type' : '{{ infra_docker_type }}', 'disk_docker_size' : {{ infra_docker_size }} }"
+  with_sequence: start=1 end="{{ number_of_infras }}"
+  tags: [ azure, ocp, initial, resource_group ]
+
+- name: Creating node_definition
+  set_fact: node_definition='{{ node_definition + [ new_item ] }}'
+  vars:
+     new_item: "{ 'hostname' : '{{ node_prefix }}{{ item }}', 'machine' : '{{ node_machine_type }}', 'disk_type' : '{{ node_disk_type }}', 'disk_size' : {{ node_disk_size }}, 'disk_docker_type' : '{{ node_docker_type }}', 'disk_docker_size' : {{ node_docker_size }} }"
+  with_sequence: start=1 end="{{ number_of_nodes }}"
+  tags: [ azure, ocp, initial, resource_group ]
