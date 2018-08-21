@@ -35,6 +35,8 @@ admin_ssh_publickey: /home/demo/.ssh/id_rsa.pub
 openshift_master_url: master.example.com
 openshift_cloudapps_url: cloudapps.example.com
 
+openshift_users: { 'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0' }
+
 redhat_subscription_username: myuser
 redhat_subscription_password: mysecret
 
