@@ -1,0 +1,13 @@
+---
+- name: Feching Master/Infra and updating against DNS Service (if any)
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_initial_steps" }
+     - { role: "{{ cloud_provider }}_ocp_fetch_master_infra" }
+     - { role: gce_cloud_dns }
+     - { role: aws_route53 }
