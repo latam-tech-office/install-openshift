@@ -5,7 +5,6 @@ ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.ym
 ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml
 ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/create_persistentvolumes.yaml -e nfs_server={{ master_definition[0].hostname }}
 ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/postinstall.yaml
-# ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-management/config.yml -e openshift_management_install_management=True -e openshift_management_app_template=cfme-template -e openshift_management_project=openshift-management -e openshift_management_install_beta=True -e openshift_management_storage_class=preconfigured
 {% if slack_token is defined and slack_token is not none %}
 ansible localhost -m slack -a "token={{ slack_token }} msg='{{ slack_message_when_ready }}'"
 {% endif %}
