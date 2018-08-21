@@ -5,12 +5,16 @@ docker_device: /dev/sdc
 
 # BASTION Defintion
 bastion_name: "{{ name }}-bastion"
+# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
+# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb
 bastion_machine_type: "Standard_D4s_v3"
 bastion_disk_type: "pd-standard"
 bastion_disk_size: 100
 
 # MASTER Definitions
 master_prefix: "{{ name }}-master"
+# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
+# # Default value: Standard_D8s_v3, 8 vCPU, 32 Gb
 master_machine_type: "Standard_D8s_v3"
 # Options for disk_type: pd-standard OR pd-ssd
 master_disk_type: "pd-standard"
@@ -21,6 +25,8 @@ master_docker_size: 20
 
 # INFRA Definitions
 infra_prefix: "{{ name }}-infra"
+# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
+# # Default value: Standard_D4s_v3, 4 vCPU, 16 Gb
 infra_machine_type: "Standard_D4s_v3"
 # Options for disk_type: pd-standard OR pd-ssd
 infra_disk_type: "pd-standard"
@@ -31,6 +37,8 @@ infra_docker_size: 20
 
 # NODE Definitions
 node_prefix: "{{ name }}-node"
+# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
+# # Default value: Standard_D2s_v3, 2 vCPU, 8 GB
 node_machine_type: "Standard_D2s_v3"
 # Options for disk_type: pd-standard OR pd-ssd
 node_disk_type: "pd-standard"
