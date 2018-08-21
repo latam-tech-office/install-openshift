@@ -43,15 +43,9 @@ azure_tenant: yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 azure_client_id: zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz
 azure_secret: wwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww
 
-
-bastion_definition: { hostname: "openshift-bastion", machine: "Standard_D4s_v3", disk_type: "pd-standard", disk_size: 100 }
-master_definition:
-   - { hostname: "openshift-master1", machine: "Standard_D8s_v3", disk_type: "pd-standard", disk_size: 100, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-infra_definition:
-   - { hostname: "openshift-infra1", machine: "Standard_D4s_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-node_definition:
-   - { hostname: "openshift-node1", machine: "Standard_D2s_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-   - { hostname: "openshift-node2", machine: "Standard_D2s_v3", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+number_of_masters: 1
+number_of_infras: 1
+number_of_nodes: 2
 ```
 
 ## Step #1: Networking 

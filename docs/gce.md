@@ -42,14 +42,9 @@ gce_credentials_file: /root/demo/somefile.json
 gce_project_id: myproject
 gce_service_account_email: myuser@myproject.iam.gserviceaccount.com
 
-bastion_definition: { hostname: "openshift-bastion", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 100 }
-master_definition:
-   - { hostname: "openshift-master1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 100, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-infra_definition:
-   - { hostname: "openshift-infra1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-node_definition:
-   - { hostname: "openshift-node1", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
-   - { hostname: "openshift-node2", machine: "n1-standard-4", disk_type: "pd-standard", disk_size: 40, disk_docker_size: 20, disk_docker_type: "pd-standard" }
+number_of_masters: 1
+number_of_infras: 1
+number_of_nodes: 2
 ```
 
 ## Step #1: Networking 
