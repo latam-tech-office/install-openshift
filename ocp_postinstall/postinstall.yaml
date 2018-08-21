@@ -26,15 +26,6 @@
      - name: "All pods in Project Default must run on Infra Host"
        command: "oc patch namespace/default --patch '{\"metadata\": {\"name\":\"default\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
 
-     - name: "Recreate Pods in Project Default"
-       command: oc delete pods --all --namespace default
-
-     - name: "All pods in Project OpenShift Infra must run on Infra Host"
-       command: "oc patch namespace/openshift-infra --patch '{\"metadata\": {\"name\":\"openshift-infra\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
-
-     - name: "Recreate Pods in Project Openshift-Infra"
-       command: oc delete pods --all --namespace openshift-infra
-
   handlers: 
      - name: OpenShift Master Restart 
        command: /usr/local/bin/master-restart {{ item }} 
