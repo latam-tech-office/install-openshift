@@ -70,6 +70,14 @@ openshift_hosted_registry_replicas=1
 #### # See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
 openshift_metrics_install_metrics=True
 openshift_metrics_hawkular_hostname=hawkular-metrics.{{ openshift_cloudapps_url }}
+openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra":"true"}
+
+#### Metrics Deployment: Prometheus
+#### # See: https://docs.openshift.com/container-platform/3.10/install_config/cluster_metrics.html#openshift-prometheus
+openshift_prometheus_namespace=openshift-metrics
+openshift_prometheus_node_selector={"node-role.kubernetes.io/infra":"true"}
 
 # Fix a bug on OCP 3.9.30
 oreg_url=registry.access.redhat.com/openshift3/ose-${component}:${version}
