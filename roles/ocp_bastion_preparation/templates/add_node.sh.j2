@@ -3,3 +3,4 @@ set -xe
 ansible-playbook add_node.yaml
 pubkey={{ admin_ssh_publickey }}
 ssh -i ${pubkey%.*} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ admin_username }}@{{ bastion_public_ip }} "sudo /root/add_node.sh"
+ssh -i ${pubkey%.*} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{ admin_username }}@{{ bastion_public_ip }} "sudo rm -rf add_node.sh"
