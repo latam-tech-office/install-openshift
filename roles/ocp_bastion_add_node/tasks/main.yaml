@@ -1,17 +1,22 @@
 - name: "Copy original Ansible's inventory to /root"
-  copy: src=/etc/ansible/hosts dest=/root/inventory_add_node
+  copy: src=/etc/ansible/hosts dest=/root/inventory_add_node remote_src=True
   tags: [ ocp, bastion, add_node ]
 
-- name: "Read the public key so it can be copied to the new host"
-  set_fact: bastion_ssh_key="{{ lookup('file','/root/.ssh/id_rsa.pub') }}"
+- name: "Read the content of this key"
+  slurp: src=/root/.ssh/id_rsa.pub
+  register: content_encoded
+  tags: [ ocp, bastion, add_node ]
+
+- name: "Reading Public Key generated. It's going to be copied to the entire cluster"
+  set_fact: bastion_ssh_key="{{ content_encoded.content | b64decode }}"
   tags: [ ocp, bastion, add_node ]
 
 - name: "Customize inventory 1/3: Adding a \"new_nodes\" into OSEv3:children section"
-  lineinfile: path=/root/inventory_add_node state=present insertafter="etcd" line="new_nodes"
+  lineinfile: path=/root/inventory_add_node state=present insertafter="^etcd" line="new_nodes"
   tags: [ ocp, bastion, add_node ]
 
 - name: "Customize inventory 2/3: Creating a new section \"[new_nodes]\""
-  lineinfile: path=/root/inventory_add_node state=present insertbefore="\[etcd\]" line="\[new_nodes\]"
+  lineinfile: path=/root/inventory_add_node state=present insertbefore="\[etcd\]" line="[new_nodes]\n"
   tags: [ ocp, bastion, add_node ]
 
 - name: "Definition for this node: {{ node_name }}"
@@ -27,5 +32,5 @@
   tags: [ ocp, bastion, add_node ]
 
 - name: "Generating script to perform scaling up"
-  template: src=add_node.sh.j2 dest=/root/add_node.sh mode=ax+x force=True
+  template: src=add_node.sh.j2 dest=/root/add_node.sh mode=a+x force=True
   tags: [ ocp, bastion, add_node ]
