@@ -15,10 +15,10 @@ gce_base_image_password: r3dh4t1!
 
 # BASTION Defintion
 # Available Machine Types for GCE: https://cloud.google.com/compute/docs/machine-types
-# Default value: n1-standard-4 (Standard machine type with 4 vCPUs and 15 GB of system memory)
+# Default value: n1-standard-2 (Standard machine type with 2 vCPUs and 7.50 GB of system memory)
 #                              Max number of persistent disks: 16, Max total PD size: 64 TB
 bastion_name: "{{ name }}-bastion"
-bastion_machine_type: "n1-standard-4"
+bastion_machine_type: "n1-standard-2"
 bastion_disk_type: "pd-standard"
 bastion_disk_size: 100
 
