@@ -1,0 +1,61 @@
+- name: "NODE: Creating Public IP. Allocation: {{ node_public_ip_allocation }}"
+  azure_rm_publicipaddress: name={{ node_name }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ node_public_ip_allocation }}
+                            tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
+  tags: [ ocp, azure, add_node, public_ip, node ]
+
+- name: "NODE: Creating Network Interface"
+  azure_rm_networkinterface:
+              name: "{{ node_name }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-node"
+              ip_configurations:
+                - name: "{{ node_name }}"
+                  public_ip_address_name: "{{ node_name }}"
+                  public_ip_allocation_method: "{{ node_public_ip_allocation }}"
+              security_group: "{{ name }}-node-sg"
+              tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
+  tags: [ ocp, azure, add_node, network_interfaces, node ]
+
+- name: "NODE: Creating instances"
+  azure_rm_virtualmachine:
+              name: "{{ node_name }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ node_machine_type }}"
+              managed_disk_type: "{{ azure_storage_account_type }}"
+              data_disks:
+                 - { lun: 0, managed_disk_type: "{{ azure_storage_account_type }}", disk_size_gb: "{{ node_docker_size }}" }
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False
+              ssh_public_keys:
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+              network_interfaces: "{{ node_name }}"
+              subnet: "{{ name }}-node"
+              image: "{{ azure_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
+  register: node_instance_creation
+  tags: [ ocp, azure, add_node, vm, node ]
+
+- name: "NODE: Adding group: openshift_node_group"
+  add_host: hostname={{ node_instance_creation.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_node_group
+            ansible_user={{ admin_username }}
+  tags: [ ocp, azure, add_node, node ]
