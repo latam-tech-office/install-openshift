@@ -1,0 +1,33 @@
+- name: "NODE: Creating disk: {{ node_name }}"
+  gce_pd: name={{ node_name }} state=present zone={{ gce_zone }}
+          mode="READ_WRITE"
+          image={{ gce_base_image }}
+          disk_type={{ node_disk_type }} size_gb={{ node_disk_size }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  tags: [ ocp, gce, add_node ]
+
+- name: "NODE: Creating Instance: {{ node_name }}"
+  gce:
+    instance_names: "{{ node_name }}"
+    state: "present"
+    machine_type: "{{ node_machine_type }}"
+    zone: "{{ gce_zone }}"
+    network: "{{ name }}"
+    subnetwork: "{{ name }}-node"
+    tags: ["{{ gce_target_tag_enable_ssh }}"]
+    disk_auto_delete: True
+    disks:
+       - name: "{{ node_name }}"
+         mode: READ_WRITE
+    credentials_file: "{{ gce_credentials_file }}"
+    project_id: "{{ gce_project_id }}"
+    service_account_email: "{{ gce_service_account_email }}"
+  register: node_instance_creation
+  tags: [ ocp, gce, add_node ]
+
+- name: "NODE: Adding group: openshift_node_group"
+  add_host: hostname={{ node_name }} groups=openshift_node_group
+            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
+  with_items: "{{ node_instance_creation.results }}"
+  tags: [ ocp, azure, compute, node, add_host ]
