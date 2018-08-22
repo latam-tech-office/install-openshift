@@ -4,3 +4,4 @@ ansible-playbook -i /root/inventory_add_node /usr/share/ansible/openshift-ansibl
 {% if slack_token is defined and slack_token is not none %}
 ansible localhost -m slack -a "token={{ slack_token }} msg='Node {{ node_name }} added successfully'"
 {% endif %}
+rm -rf /root/inventory_add_node
