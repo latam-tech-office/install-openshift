@@ -23,11 +23,23 @@
     credentials_file: "{{ gce_credentials_file }}"
     project_id: "{{ gce_project_id }}"
     service_account_email: "{{ gce_service_account_email }}"
-  register: node_instance_creation
+  register: node_creation_result
+  tags: [ ocp, gce, add_node ]
+
+- name: "NODE: Attaching a Docker storage"
+  gce_pd: name="{{ node_name }}-docker" state=present zone={{ gce_zone }}
+          mode=READ_WRITE
+          disk_type={{ node_docker_type }} size_gb={{ node_docker_size }}
+          delete_on_termination=True  instance_name={{ node_name }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
   tags: [ ocp, gce, add_node ]
 
 - name: "NODE: Adding group: openshift_node_group"
-  add_host: hostname={{ node_name }} groups=openshift_node_group
+  add_host: hostname={{ node_creation_result.instance_data[0].public_ip }} groups=openshift_node_group
             ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
-  with_items: "{{ node_instance_creation.results }}"
-  tags: [ ocp, azure, compute, node, add_host ]
+  tags: [ ocp, gce, add_node ]
+
+- name: "NODE: Waiting to be ready: {{ node_name }}"
+  wait_for: host={{ node_creation_result.instance_data[0].public_ip }} port=22 delay=30 state=started
+  tags: [ ocp, gce, add_node ]

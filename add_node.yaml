@@ -7,6 +7,16 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   pre_tasks:
+     - name: "Check Parameter: admin_username"
+       fail: msg="admin_username is not defined or is empty"
+       when: admin_username is not defined or admin_username is none
+       tags: [ always ]
+
+     - name: "Check Parameter: admin_ssh_publickey"
+       fail: msg="admin_ssh_publickey is not defined or is empty"
+       when: admin_ssh_publickey is not defined or admin_ssh_publickey is none
+       tags: [ always ]
+
      - name: "Check Parameter: redhat_subscription_username"
        fail: msg="redhat_subscription_username is not defined or is empty"
        when: redhat_subscription_username is not defined or redhat_subscription_username is none
@@ -46,6 +56,7 @@
   gather_facts: False
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles:
      - { role: "{{ cloud_provider }}_ocp_fetch_bastion" }
 
@@ -55,8 +66,9 @@
   become: True
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles:
-     - { role: ocp_bastion_add_node, node_name: "{{ node_prefix }}{{ next_node }}" }
+     - { role: ocp_bastion_add_node  }
 
 - name: "OPENSHIFT: Preparing Hosts"
   hosts: openshift_node_group

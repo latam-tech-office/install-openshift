@@ -1,5 +1,5 @@
 - name: "BASTION: Fetching Information"
-  azure_rm_virtualmachine: name={{ bastion_definition.hostname }} location={{ region }}
+  azure_rm_virtualmachine: name={{ bastion_name }} location={{ region }}
                            resource_group={{ name }}
   register: bastion_instance
   tags: [ ocp, azure, fetch, bastion ]
