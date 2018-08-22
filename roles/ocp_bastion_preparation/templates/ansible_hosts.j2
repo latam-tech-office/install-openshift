@@ -32,8 +32,16 @@ openshift_examples_modify_imagestreams=true
 openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability,package_version
 
 # Configuring Cluster Logging
-# https://docs.openshift.com/container-platform/3.7/install_config/install/advanced_install.html#advanced-install-cluster-logging
+# https://docs.openshift.com/container-platform/latest/install_config/aggregate_logging.html
 openshift_logging_install_logging=true
+openshift_logging_eventrouter_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_fluentd_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_es_ops_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_kibana_ops_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_curator_ops_nodeselector={"node-role.kubernetes.io/infra":"true"}
 
 # SSH user, this user should allow ssh based auth without requiring a password
 ansible_ssh_user=root

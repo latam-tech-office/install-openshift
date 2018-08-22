@@ -1,7 +1,7 @@
-- name: "BASTION: Creating Public IP. Allocation: {{ public_ip_allocation_bastion }}"
+- name: "BASTION: Creating Public IP. Allocation: {{ bastion_public_ip_allocation }}"
   azure_rm_publicipaddress: name={{ bastion_definition.hostname }} state=present
                             resource_group={{ name }} location={{ region }}
-                            allocation_method={{ public_ip_allocation_bastion }}
+                            allocation_method={{ bastion_public_ip_allocation }}
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
@@ -33,7 +33,7 @@
               location: "{{ region }}"
               os_type: Linux
               vm_size: "{{ bastion_definition.machine }}"
-              managed_disk_type: "{{ openshift_storage_account_type }}"
+              managed_disk_type: "{{ azure_storage_account_type }}"
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False
               ssh_public_keys:
@@ -41,7 +41,7 @@
                    key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
               network_interfaces: "{{ bastion_definition.hostname }}"
               subnet: "{{ name }}-master-infra"
-              image: "{{ openshift_base_image }}"
+              image: "{{ azure_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -62,10 +62,10 @@
             bastion_public_ip={{ bastion_public_ip }}
   tags: [ ocp, azure, compute, bastion ]
 
-- name: "MASTER: Creating Public IP. Allocation: {{ public_ip_allocation_master }}"
+- name: "MASTER: Creating Public IP. Allocation: {{ master_public_ip_allocation }}"
   azure_rm_publicipaddress: name={{ item.hostname }} state=present
                             resource_group={{ name }} location={{ region }}
-                            allocation_method={{ public_ip_allocation_master }}
+                            allocation_method={{ master_public_ip_allocation }}
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
@@ -83,7 +83,7 @@
               ip_configurations:
                 - name: "{{ item.hostname }}"
                   public_ip_address_name: "{{ item.hostname }}" 
-                  public_ip_allocation_method: "{{ public_ip_allocation_master }}"
+                  public_ip_allocation_method: "{{ master_public_ip_allocation }}"
               security_group: "{{ name }}-master-sg"
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -101,9 +101,9 @@
               location: "{{ region }}"
               os_type: Linux
               vm_size: "{{ item.machine }}"
-              managed_disk_type: "{{ openshift_storage_account_type }}"
+              managed_disk_type: "{{ azure_storage_account_type }}"
               data_disks: 
-                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+                 - { lun: 0, managed_disk_type: "{{ azure_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False 
               ssh_public_keys: 
@@ -111,7 +111,7 @@
                    key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}" 
               network_interfaces: "{{ item.hostname }}"
               subnet: "{{ name }}-master-infra"
-              image: "{{ openshift_base_image }}"
+              image: "{{ azure_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -132,10 +132,10 @@
   with_items: "{{ master_instance_creation.results }}"
   tags: [ ocp, azure, compute, master ]
 
-- name: "INFRA: Creating Public IP. Allocation: {{ public_ip_allocation_infra }}"
+- name: "INFRA: Creating Public IP. Allocation: {{ infra_public_ip_allocation }}"
   azure_rm_publicipaddress: name={{ item.hostname }} state=present
                             resource_group={{ name }} location={{ region }}
-                            allocation_method={{ public_ip_allocation_infra }}
+                            allocation_method={{ infra_public_ip_allocation }}
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
@@ -153,7 +153,7 @@
               ip_configurations:
                 - name: "{{ item.hostname }}"
                   public_ip_address_name: "{{ item.hostname }}" 
-                  public_ip_allocation_method: "{{ public_ip_allocation_infra }}"
+                  public_ip_allocation_method: "{{ infra_public_ip_allocation }}"
               security_group: "{{ name }}-infra-sg"
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -171,9 +171,9 @@
               location: "{{ region }}"
               os_type: Linux
               vm_size: "{{ item.machine }}"
-              managed_disk_type: "{{ openshift_storage_account_type }}"
+              managed_disk_type: "{{ azure_storage_account_type }}"
               data_disks:
-                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+                 - { lun: 0, managed_disk_type: "{{ azure_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False
               ssh_public_keys:
@@ -181,7 +181,7 @@
                    key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
               network_interfaces: "{{ item.hostname }}"
               subnet: "{{ name }}-master-infra"
-              image: "{{ openshift_base_image }}"
+              image: "{{ azure_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -202,10 +202,10 @@
   with_items: "{{ infra_instance_creation.results }}"
   tags: [ ocp, azure, compute, infra ]
 
-- name: "NODE: Creating Public IP. Allocation: {{ public_ip_allocation_node }}"
+- name: "NODE: Creating Public IP. Allocation: {{ node_public_ip_allocation }}"
   azure_rm_publicipaddress: name={{ item.hostname }} state=present
                             resource_group={{ name }} location={{ region }}
-                            allocation_method={{ public_ip_allocation_node }}
+                            allocation_method={{ node_public_ip_allocation }}
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
@@ -223,7 +223,7 @@
               ip_configurations:
                 - name: "{{ item.hostname }}"
                   public_ip_address_name: "{{ item.hostname }}"
-                  public_ip_allocation_method: "{{ public_ip_allocation_node }}"
+                  public_ip_allocation_method: "{{ node_public_ip_allocation }}"
               security_group: "{{ name }}-node-sg"
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"
@@ -241,9 +241,9 @@
               location: "{{ region }}"
               os_type: Linux
               vm_size: "{{ item.machine }}"
-              managed_disk_type: "{{ openshift_storage_account_type }}"
+              managed_disk_type: "{{ azure_storage_account_type }}"
               data_disks:
-                 - { lun: 0, managed_disk_type: "{{ openshift_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+                 - { lun: 0, managed_disk_type: "{{ azure_storage_account_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False
               ssh_public_keys:
@@ -251,7 +251,7 @@
                    key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
               network_interfaces: "{{ item.hostname }}"
               subnet: "{{ name }}-node"
-              image: "{{ openshift_base_image }}"
+              image: "{{ azure_base_image }}"
               remove_on_absent: All
               tags: "{{ labels }}"
               subscription_id: "{{ azure_subscription_id }}"

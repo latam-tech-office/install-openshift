@@ -27,17 +27,15 @@
       - install_openshift.sh
   tags: [ ocp, prepare_bastion ]
 
-- name: "LOCAL: Generating script (aka STEP #3) locally to start installation"
-  local_action: template src=step3_install_openshift.sh.j2 dest=step3_install_openshift.sh mode=a+x force=True
+- name: "LOCAL: Generating script local scripts"
+  local_action: template src={{ item }}.j2 dest={{ item }} mode=a+x force=True
+  with_items:
+      - step3_install_openshift.sh
+      - ssh_bastion.sh
+      - add_node.sh
   when: bastion_public_ip is defined and bastion_public_ip is not none
   become: False
   tags: [ ocp, prepare_bastion, step3 ]
-
-- name: "LOCAL: Generating script to easy SSH Bastion"
-  local_action: template src=ssh_bastion.sh.j2 dest=ssh_bastion.sh mode=a+x force=True
-  when: bastion_public_ip is defined and bastion_public_ip is not none
-  become: False
-  tags: [ ocp, prepare_bastion ]
 
 - name: "Installing OpenShift Utils and other packages"
   yum: name="{{ item }}" state=latest

@@ -3,6 +3,14 @@
 # Docker Partition on hosts
 docker_device: /dev/sdc
 
+# Details configuration for
+azure_storage_account_type: Standard_LRS
+azure_base_image:
+    offer: RHEL
+    publisher: RedHat
+    sku: '7.3'
+    version: latest
+
 # BASTION Defintion
 bastion_name: "{{ name }}-bastion"
 # Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
@@ -10,6 +18,7 @@ bastion_name: "{{ name }}-bastion"
 bastion_machine_type: "Standard_D4s_v3"
 bastion_disk_type: "pd-standard"
 bastion_disk_size: 100
+bastion_public_ip_allocation: Static
 
 # MASTER Definitions
 master_prefix: "{{ name }}-master"
@@ -22,6 +31,7 @@ master_disk_size: 100
 # Options for disk_type: pd-standard OR pd-ssd
 master_docker_type: "pd-standard"
 master_docker_size: 20
+master_public_ip_allocation: Static
 
 # INFRA Definitions
 infra_prefix: "{{ name }}-infra"
@@ -34,6 +44,7 @@ infra_disk_size: 40
 # Options for disk_type: pd-standard OR pd-ssd
 infra_docker_type: "pd-standard"
 infra_docker_size: 20
+infra_public_ip_allocation: Static
 
 # NODE Definitions
 node_prefix: "{{ name }}-node"
@@ -46,3 +57,4 @@ node_disk_size: 40
 # Options for disk_type: pd-standard OR pd-ssd
 node_docker_type: "pd-standard"
 node_docker_size: 20
+node_public_ip_allocation: Static

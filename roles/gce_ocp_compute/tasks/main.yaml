@@ -7,7 +7,7 @@
 - name: "BASTION: Creating disk"
   gce_pd: name={{ bastion_definition.hostname }} state=present zone={{ gce_zone }}
           mode="READ_WRITE"
-          image={{ openshift_base_image }}
+          image={{ gce_base_image }}
           disk_type={{ bastion_definition.disk_type }} size_gb={{ bastion_definition.disk_size }}
           credentials_file={{ gce_credentials_file }}
           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
@@ -36,7 +36,7 @@
 - name: "BASTION: Adding group: openshift_bastion"
   add_host: hostname={{ bastion_instance_creation.instance_data[0].public_ip }}
             groups=openshift_bastion
-            ansible_user={{ admin_username }}  ansible_password={{ openshift_base_image_password }}
+            ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
             bastion_public_ip={{ bastion_instance_creation.instance_data[0].public_ip }}
   tags: [ ocp, gce, compute, bastion ]
 
@@ -51,7 +51,7 @@
 - name: "MASTER, INFRA and NODE: Creating disk"
   gce_pd: name={{ item.hostname }} state=present zone={{ gce_zone }}
           mode="READ_WRITE"
-          image={{ openshift_base_image }}
+          image={{ gce_base_image }}
           disk_type={{ item.disk_type }} size_gb={{ item.disk_size }} 
           credentials_file={{ gce_credentials_file }}
           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
@@ -85,7 +85,7 @@
 
 - name: "MASTER: Adding group: openshift_master_group"
   add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_master_group
-            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
   with_items: "{{ master_instance_creation.results }}"
   tags: [ ocp, gce, compute, master ]
 
@@ -116,7 +116,7 @@
 
 - name: "INFRA: Adding group: openshift_infra_group"
   add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_infra_group
-            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
   with_items: "{{ infra_instance_creation.results }}"
   tags: [ ocp, gce, compute, infra ]
 
@@ -142,7 +142,7 @@
 
 - name: "NODE: Adding group: openshift_node_group"
   add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_node_group
-            ansible_user={{ admin_username }} ansible_password={{ openshift_base_image_password }}
+            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
   with_items: "{{ node_instance_creation.results }}"
   tags: [ ocp, azure, compute, node, add_host ]
 

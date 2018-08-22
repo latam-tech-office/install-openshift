@@ -1,0 +1,69 @@
+---
+- name: "Adding a new node into the OpenShift's Cluster: {{ name }}"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  pre_tasks:
+     - name: "Check Parameter: redhat_subscription_username"
+       fail: msg="redhat_subscription_username is not defined or is empty"
+       when: redhat_subscription_username is not defined or redhat_subscription_username is none
+       tags: [ always ]
+
+     - name: "Check Parameter: redhat_subscription_password"
+       fail: msg="redhat_subscription_password is not defined or is empty"
+       when: redhat_subscription_password is not defined or redhat_subscription_password is none
+       tags: [ always ]
+     
+     - name: Reading contents from openshift.config and fetching number of nodes
+       set_fact: number_of_nodes="{{ lookup('file', 'openshift.config') | regex_replace('\n', '') | regex_replace('^(.*)number_of_nodes[:]','') | regex_replace('^ *(\d+).*', '\\1') | int }}"
+
+     - name: "is there any number available ?"
+       fail: msg="number_of_nodes wasn't defined"
+       when: number_of_nodes is not defined or number_of_nodes is none
+
+     - name: Compute the next node
+       set_fact: next_node={{ number_of_nodes|int + 1 }}
+
+     - name: Replace on openshift.config
+       lineinfile: dest=openshift.config state=present create=False regexp="^number_of_nodes" line="number_of_nodes{{ ':' }} {{ next_node }}"
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_add_node", node_name: "{{ node_prefix }}{{ next_node }}" }
+
+- name: "NODE: Applying Red Hat Subscription"
+  hosts: openshift_node_group
+  gather_facts: True
+  become: True
+  vars_files:
+     - openshift.config
+  roles:
+     - { role: redhat_subscription }
+
+- name: "BASTION: Fetch information about Bastion"
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+     - openshift.config
+  roles:
+     - { role: "{{ cloud_provider }}_ocp_fetch_bastion" }
+
+- name: "BASTION: Creating a custom inventory"
+  hosts: openshift_bastion
+  gather_facts: False
+  become: True
+  vars_files:
+     - openshift.config
+  roles:
+     - { role: ocp_bastion_add_node, node_name: "{{ node_prefix }}{{ next_node }}" }
+
+- name: "OPENSHIFT: Preparing Hosts"
+  hosts: openshift_node_group
+  gather_facts: False
+  become: True
+  vars_files:
+     - openshift.config
+     - cloud_provider/{{ cloud_provider }}
+  roles:
+     - { role: ocp_hosts_preparation }
