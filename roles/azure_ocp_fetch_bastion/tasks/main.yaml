@@ -1,16 +1,20 @@
 - name: "BASTION: Fetching Information"
   azure_rm_virtualmachine: name={{ bastion_name }} location={{ region }}
                            resource_group={{ name }}
+                           tags={{ labels }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
   register: bastion_instance
-  tags: [ ocp, azure, fetch, bastion ]
+  tags: [ azure_fetch_bastion ]
 
-- name: "BASTION: Public IP: {{ bastion_instance.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
-  set_fact: bastion_public_ip="{{ bastion_instance.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
-  tags: [ ocp, azure, fetch, bastion ]
+- name: "BASTION: Public IP: {{ bastion_instance.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  set_fact: bastion_public_ip="{{ bastion_instance.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+  tags: [ azure_fetch_bastion ]
 
 - name: "BASTION: Adding group: openshift_bastion"
   add_host: hostname={{ bastion_instance.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}
             groups=openshift_bastion
             ansible_user={{ admin_username }}
             bastion_public_ip={{ bastion_public_ip }}
-  tags: [ ocp, azure, fetch, bastion ]
+            node_name="{{ node_prefix }}{{ next_node }}"
+  tags: [ azure_fetch_bastion ]

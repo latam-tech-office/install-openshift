@@ -1,4 +1,4 @@
-- name: "NODE: Creating Public IP. Allocation: {{ node_public_ip_allocation }}"
+- name: "NODE: Creating Public IP. Allocation: {{ node_public_ip_allocation }} for {{ node_name }}"
   azure_rm_publicipaddress: name={{ node_name }} state=present
                             resource_group={{ name }} location={{ region }}
                             allocation_method={{ node_public_ip_allocation }}
@@ -7,7 +7,7 @@
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, add_node, public_ip, node ]
 
-- name: "NODE: Creating Network Interface"
+- name: "NODE: Creating Network Interface for {{ node_name }}"
   azure_rm_networkinterface:
               name: "{{ node_name }}"
               state: present
@@ -27,7 +27,7 @@
               secret: "{{ azure_secret }}"
   tags: [ ocp, azure, add_node, network_interfaces, node ]
 
-- name: "NODE: Creating instances"
+- name: "NODE: Creating instances for {{ node_name }}"
   azure_rm_virtualmachine:
               name: "{{ node_name }}"
               state: present
