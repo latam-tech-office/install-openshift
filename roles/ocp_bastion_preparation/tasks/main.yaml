@@ -43,6 +43,7 @@
       - step3_install_openshift.sh
       - ssh_bastion.sh
       - add_node.sh
+      - reinstall-metrics.sh
   when: bastion_public_ip is defined and bastion_public_ip is not none
   become: False
   tags: [ ocp, prepare_bastion, step3 ]
