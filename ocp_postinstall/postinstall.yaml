@@ -15,7 +15,7 @@
 
      - name: "Modify configuration in Master, so all Pods will be create in {{ selector_compute }}"
        lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "{{ selector_compute }}"'
-       notify: "OpenShift Master Restart"
+#       notify: "OpenShift Master Restart"
 
      - name: Removing nodeSelector on registry-console
        command: "oc patch deploymentconfig/registry-console --type=json --patch='[{\"op\":\"remove\", \"path\":\"/spec/template/spec/nodeSelector\"}]' --namespace default"
@@ -26,9 +26,16 @@
      - name: "All pods in Project Default must run on Infra Host"
        command: "oc patch namespace/default --patch '{\"metadata\": {\"name\":\"default\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
 
-  handlers: 
+#  handlers: 
      - name: OpenShift Master Restart 
        command: /usr/local/bin/master-restart {{ item }} 
        with_items: 
           - api
           - controllers
+
+     - name: Make sure OpenShift's Master is working before moving on
+       command: oc login --username=system:admin
+       register: login_admin
+       until: login_admin.rc == 0
+       retries: 120
+       delay: 60
