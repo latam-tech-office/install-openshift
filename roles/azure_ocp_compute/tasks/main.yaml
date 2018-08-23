@@ -126,11 +126,6 @@
   set_fact: master_public_ip="{{ master_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
   tags: [ ocp, azure, compute, vm, master ]
 
-- name: "OPENSHIFT MASTER URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_master_url is not defined or openshift_master_url is none
-  tags: [ ocp, azure, compute, vm, master ]
-
 - name: "MASTER: Adding group: openshift_master_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_master_group
             ansible_user={{ admin_username }}
@@ -199,11 +194,6 @@
 
 - name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
   set_fact: infra_public_ip="{{ infra_instance_creation.results[0].ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
-  tags: [ ocp, azure, compute, vm, infra ]
-
-- name: "CLOUD APPS URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_cloudapps_url="{{ infra_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_cloudapps_url is not defined or openshift_cloudapps_url is none
   tags: [ ocp, azure, compute, vm, infra ]
 
 - name: "INFRA: Adding group: openshift_infra_group"

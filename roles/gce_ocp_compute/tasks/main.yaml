@@ -83,11 +83,6 @@
   set_fact: master_public_ip="{{ master_instance_creation.results[0].instance_data[0].public_ip }}"
   tags: [ ocp, gce, compute, vm, master ]
 
-- name: "OPENSHIFT MASTER URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_master_url is not defined or openshift_master_url is none
-  tags: [ ocp, gce, compute, vm, master ]
-
 - name: "MASTER: Adding group: openshift_master_group"
   add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_master_group
             ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
@@ -117,11 +112,6 @@
 
 - name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
   set_fact: infra_public_ip="{{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
-  tags: [ ocp, gce, compute, vm, infra ]
-
-- name: "CLOUD APPS URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_cloudapps_url="{{ infra_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_cloudapps_url is not defined or openshift_cloudapps_url is none
   tags: [ ocp, gce, compute, vm, infra ]
 
 - name: "INFRA: Adding group: openshift_infra_group"

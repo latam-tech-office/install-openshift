@@ -28,15 +28,15 @@
        when: redhat_subscription_password is not defined or redhat_subscription_password is none
        tags: [ always ]
 
-     - name: "Check Parameter: openshift_master_url"
-       fail: msg="openshift_master_url not defined or is empty"
-       when: openshift_master_url is not defined or openshift_master_url is none
-       tags: [ always ]
+#     - name: "Check Parameter: openshift_master_url"
+#       fail: msg="openshift_master_url not defined or is empty"
+#       when: openshift_master_url is not defined or openshift_master_url is none
+#       tags: [ always ]
 
-     - name: "Check Parameter: openshift_cloudapps_url"
-       fail: msg="openshift_cloudapps_url is not defined or is empty"
-       when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
-       tags: [ always ]
+#     - name: "Check Parameter: openshift_cloudapps_url"
+#       fail: msg="openshift_cloudapps_url is not defined or is empty"
+#       when: openshift_cloudapps_url is not defined or openshift_cloudpps_url is none
+#       tags: [ always ]
   roles:
 #     - { role: Azure.azure_preview_modules } # TEMPORARY: It solves a bug on azure_rm_networkinterface
      - { role: "{{ cloud_provider }}_ocp_initial_steps" }
@@ -61,7 +61,7 @@
   vars_files:
      - openshift.config
   roles: 
-     - { role: ocp_bastion_preparation, master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
+     - { role: ocp_bastion_preparation, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}", master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
 
 - name: "OPENSHIFT: Preparing Hosts"
   hosts: openshift_master_group, openshift_infra_group, openshift_node_group
