@@ -2,4 +2,5 @@
   azure_rm_resourcegroup: name={{ name }} state=absent force=True
                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                           client_id={{ azure_client_id }} secret={{ azure_secret }}
+  ignore_errors: True
   tags: [ ocp, azure, delete_all ]
