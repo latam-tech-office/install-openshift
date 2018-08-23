@@ -9,7 +9,7 @@
       value={{ master_public_ip }}
       wait=yes
   tags: [ ocp, aws, aws_route53 ]
-  when: aws_route53_zone is defined and aws_route53_zone is not none
+  when: aws_route53_zone is defined and aws_route53_zone is not none and openshift_master_url is defined and openshift_master_url is not none
 
 - name: "AWS Route53 DNS: Zone: {{ aws_route53_zone }} INFRA: *.{{ openshift_cloudapps_url }} = {{ infra_public_ip }}"
   route53:
@@ -22,4 +22,4 @@
       value={{ infra_public_ip }}
       wait=yes
   tags: [ ocp, aws, aws_route53 ]
-  when: aws_route53_zone is defined and aws_route53_zone is not none
+  when: aws_route53_zone is defined and aws_route53_zone is not none and openshift_cloudapps_url is defined and openshift_cloudapps_url is not none
