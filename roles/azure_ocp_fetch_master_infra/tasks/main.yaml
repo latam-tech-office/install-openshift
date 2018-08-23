@@ -1,6 +1,9 @@
 - name: "MASTER: Fetching Information"
   azure_rm_virtualmachine: name={{ item.hostname }} location={{ region }}
                            resource_group={{ name }}
+                           tags={{ labels }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
   with_items: "{{ master_definition }}"
   register: master_instances
   tags: [ ocp, azure, fetch, master ]
@@ -12,6 +15,9 @@
 - name: "INFRA: Fetching Information"
   azure_rm_virtualmachine: name={{ item.hostname }} location={{ region }}
                            resource_group={{ name }}
+                           tags={{ labels }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
   with_items: "{{ infra_definition }}"
   register: infra_instances
   tags: [ ocp, azure, fetch, infra ]
