@@ -4,7 +4,6 @@
 docker_device: /dev/sdc
 
 # Details configuration for
-azure_storage_account_type: Standard_LRS
 azure_base_image:
     offer: RHEL
     publisher: RedHat
@@ -14,47 +13,48 @@ azure_base_image:
 # BASTION Defintion
 bastion_name: "{{ name }}-bastion"
 # Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
-# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb
+# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
 bastion_machine_type: "Standard_D4s_v3"
-bastion_disk_type: "pd-standard"
+# Options for bastion_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+bastion_disk_type: "Standard_LRS"
 bastion_disk_size: 100
 bastion_public_ip_allocation: Static
 
 # MASTER Definitions
 master_prefix: "{{ name }}-master"
 # Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
-# # Default value: Standard_D8s_v3, 8 vCPU, 32 Gb
-master_machine_type: "Standard_D8s_v3"
-# Options for disk_type: pd-standard OR pd-ssd
-master_disk_type: "pd-standard"
+# Default value: Standard_E2s_v3, 2 vCPU, 16 Gb, Memory Optimized, Esv3-series
+master_machine_type: "Standard_E2s_v3"
+# Options for master_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+master_disk_type: "Premium_LRS"
 master_disk_size: 100
-# Options for disk_type: pd-standard OR pd-ssd
-master_docker_type: "pd-standard"
+# Options for master_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+master_docker_type: "Premium_LRS"
 master_docker_size: 20
 master_public_ip_allocation: Static
 
 # INFRA Definitions
 infra_prefix: "{{ name }}-infra"
 # Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
-# # Default value: Standard_D4s_v3, 4 vCPU, 16 Gb
+# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
 infra_machine_type: "Standard_D4s_v3"
-# Options for disk_type: pd-standard OR pd-ssd
-infra_disk_type: "pd-standard"
+# Options for infra_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+infra_disk_type: "Premium_LRS"
 infra_disk_size: 40
-# Options for disk_type: pd-standard OR pd-ssd
-infra_docker_type: "pd-standard"
+# Options for infra_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+infra_docker_type: "Premium_LRS"
 infra_docker_size: 20
 infra_public_ip_allocation: Static
 
 # NODE Definitions
 node_prefix: "{{ name }}-node"
 # Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
-# # Default value: Standard_D2s_v3, 2 vCPU, 8 GB
-node_machine_type: "Standard_D2s_v3"
-# Options for disk_type: pd-standard OR pd-ssd
-node_disk_type: "pd-standard"
+# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
+node_machine_type: "Standard_D4s_v3"
+# Options for node_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+node_disk_type: "Premium_LRS"
 node_disk_size: 40
-# Options for disk_type: pd-standard OR pd-ssd
-node_docker_type: "pd-standard"
+# Options for node_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+node_docker_type: "Premium_LRS"
 node_docker_size: 20
 node_public_ip_allocation: Static
