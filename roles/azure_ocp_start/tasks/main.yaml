@@ -1,0 +1,8 @@
+- name: STARTING OpenShift Cluster
+  azure_rm_virtualmachine: name={{ item.hostname }} location={{ region }} 
+                           state=present started=True
+                           resource_group={{ name }}
+                           tags={{ labels }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
