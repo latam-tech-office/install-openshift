@@ -7,7 +7,7 @@ docker_device: /dev/sdc
 azure_base_image:
     offer: RHEL
     publisher: RedHat
-    sku: '7.3'
+    sku: '7.4'
     version: latest
 
 # BASTION Defintion
