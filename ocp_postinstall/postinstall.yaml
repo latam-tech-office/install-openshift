@@ -24,7 +24,7 @@
        command: "oc patch deploymentconfig/registry-console --patch='{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"node-role.kubernetes.io/infra\": \"true\"}}}}}' --namespace default"
 
      - name: "All pods in Project Default and OpenShift-Infra  must run on Infra Node"
-       command: "oc patch namespace/{{ item }} --patch '{\"metadata\": {\"name\":\"default\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
+       command: "oc patch namespace/{{ item }} --patch '{\"metadata\": {\"name\":\"{{ item }}\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
        with_items:
           - default
           - openshift-infra
