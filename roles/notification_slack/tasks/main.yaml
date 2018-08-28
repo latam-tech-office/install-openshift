@@ -1,0 +1,3 @@
+- name: Notification over Slack Channel
+  slack: token={{ slack_token }} msg="{{ message }}"
+  when: slack_token is defined and slack_token is not none and message is defined and message is not none

@@ -6,4 +6,7 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles:
+     - { role: "{{ cloud_provider }}_ocp_initial_steps" }
      - { role: "{{ cloud_provider }}_ocp_start" }
+     - { role: "{{ cloud_provider }}_ocp_fetch_master_infra" }
+     - { role: notification_slack, message: "OpenShift restart. WebConsole on https://{{ openshift_master_url }}:8443/" }
