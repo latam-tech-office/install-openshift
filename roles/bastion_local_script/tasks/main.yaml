@@ -1,0 +1,8 @@
+- name: "LOCAL: Generating script local scripts"
+  local_action: template src={{ item }}.j2 dest={{ item }} mode=a+x force=True
+  with_items:
+      - step3_install_openshift.sh
+      - ssh_bastion.sh
+      - add_node.sh
+  when: bastion_public_ip is defined and bastion_public_ip is not none
+  become: False
