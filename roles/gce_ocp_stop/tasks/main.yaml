@@ -1,3 +1,8 @@
+- name: STOPPING Bastion
+  gce: instance_names="{{ bastion_definition.hostname }}" state=stopped zone={{ gce_zone }}
+       project_id={{ gce_project_id }} credentials_file={{ gce_credentials_file }} 
+       service_account_email={{ gce_service_account_email }}
+
 - name: STOPPING OpenShift Cluster
   gce: instance_names="{{ item.hostname }}" state=stopped zone={{ gce_zone }}
        project_id={{ gce_project_id }} credentials_file={{ gce_credentials_file }} 
