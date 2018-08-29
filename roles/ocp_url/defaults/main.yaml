@@ -1,0 +1,2 @@
+# DNS Service used in case a public DNS resolution is not provided
+dns_service_suffix: "xip.io"
