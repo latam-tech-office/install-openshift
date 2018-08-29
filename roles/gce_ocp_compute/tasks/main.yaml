@@ -33,11 +33,15 @@
   register: bastion_instance_creation
   tags: [ ocp, gce, compute, vm, bastion ]
 
+- name: "BASTION: Fetching Bastion Public IP"
+  set_fact: bastion_public_ip="{{ bastion_instance_creation.instance_data[0].public_ip }}"
+  tags: [ ocp, gce, compute, vm, bastion ]
+
 - name: "BASTION: Adding group: openshift_bastion"
   add_host: hostname={{ bastion_instance_creation.instance_data[0].public_ip }}
             groups=openshift_bastion
             ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
-            bastion_public_ip={{ bastion_instance_creation.instance_data[0].public_ip }}
+            bastion_public_ip={{ bastion_public_ip }}
   tags: [ ocp, gce, compute, bastion ]
 
 - name: "MASTER and INFRA: Creating Static IP Address"
