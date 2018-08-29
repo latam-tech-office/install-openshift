@@ -5,6 +5,10 @@
   register: bastion_instance
   tags: [ ocp, gce, fetch, bastion ]
 
+- name: "BASTION: Fetching Bastion Public IP"
+  set_fact: bastion_public_ip="{{ bastion_instance.instance_data[0].public_ip }}"
+  tags: [ ocp, gce, fetch, bastion ]
+
 - name: "BASTION: Adding group: openshift_bastion"
   add_host: hostname={{ bastion_instance.instance_data[0].public_ip }}
             groups=openshift_bastion
