@@ -1,7 +1,7 @@
-- name: "OPENSHIFT MASTER URL (Redefining): {{ master_public_ip }}.{{ dns_service_suffix }}"
+- name: "OPENSHIFT MASTER URL (Redefining): http://{{ master_public_ip }}.{{ dns_service_suffix }}:8443"
   set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
   when: openshift_master_url is not defined or openshift_master_url is none
 
-- name: "CLOUD APPS URL (Redefining): {{ infra_public_ip }}.{{ dns_service_suffix }}"
+- name: "CLOUD APPS URL (Redefining): *.{{ infra_public_ip }}.{{ dns_service_suffix }}"
   set_fact: openshift_cloudapps_url="{{ infra_public_ip }}.{{ dns_service_suffix }}"
   when: openshift_cloudapps_url is not defined or openshift_cloudapps_url is none
