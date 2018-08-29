@@ -8,5 +8,8 @@
   roles:
      - { role: "{{ cloud_provider }}_ocp_initial_steps" }
      - { role: "{{ cloud_provider }}_ocp_start" }
+     - { role: "{{ cloud_provider }}_ocp_fetch_bastion" }
+     - { role: bastion_local_script }
      - { role: "{{ cloud_provider }}_ocp_fetch_master_infra" }
-     - { role: notification_slack, message: "OpenShift restart. WebConsole on https://{{ openshift_master_url }}:8443/" }
+     - { role: ocp_url }
+     - { role: notification_slack, message: "OpenShift Started. WebConsole on https://{{ openshift_master_url }}:8443/" }

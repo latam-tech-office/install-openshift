@@ -61,7 +61,9 @@
   vars_files:
      - openshift.config
   roles: 
+     - { role: ocp_url, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}" }
      - { role: ocp_bastion_preparation, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}", master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
+     - { role: bastion_local_script, bastion_public_ip: "{{ hostvars['localhost']['bastion_public_ip'] }}" }
 
 - name: "OPENSHIFT: Preparing Hosts"
   hosts: openshift_master_group, openshift_infra_group, openshift_node_group

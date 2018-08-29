@@ -21,13 +21,3 @@
 - name: "INFRA: (First INFRA only) Public IP: {{ infra_instances.results[0].instance_data[0].public_ip }}"
   set_fact: infra_public_ip="{{ infra_instances.results[0].instance_data[0].public_ip }}"
   tags: [ ocp, gce, fetch, infra ]
-
-- name: "OPENSHIFT MASTER URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_master_url is not defined or openshift_master_url is none
-  tags: [ ocp, fetch, master ]
-
-- name: "CLOUD APPS URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_cloudapps_url="{{ infra_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_cloudapps_url is not defined or openshift_cloudapps_url is none
-  tags: [ ocp, fetch, infra ]

@@ -21,31 +21,11 @@
   set_fact: bastion_ssh_key="{{ content_encoded.content | b64decode }}"
   tags: [ ocp, prepare_bastion, read_bastion_key ]
 
-- name: "OPENSHIFT MASTER URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_master_url is not defined or openshift_master_url is none
-  tags: [ ocp, prepare_bastion ]
-
-- name: "CLOUD APPS URL: Redefining (in case it wasn't defined)"
-  set_fact: openshift_cloudapps_url="{{ infra_public_ip }}.{{ dns_service_suffix }}"
-  when: openshift_cloudapps_url is not defined or openshift_cloudapps_url is none
-  tags: [ ocp, prepare_bastion ]
-
 - name: "Generating script to perform all necessary OpenShift installations"
   template: src={{ item }}.j2 dest=/root/{{ item }} mode=a+x force=True
   with_items: 
       - install_openshift.sh
   tags: [ ocp, prepare_bastion ]
-
-- name: "LOCAL: Generating script local scripts"
-  local_action: template src={{ item }}.j2 dest={{ item }} mode=a+x force=True
-  with_items:
-      - step3_install_openshift.sh
-      - ssh_bastion.sh
-      - add_node.sh
-  when: bastion_public_ip is defined and bastion_public_ip is not none
-  become: False
-  tags: [ ocp, prepare_bastion, step3 ]
 
 - name: "Installing OpenShift Utils and other packages"
   yum: name="{{ item }}" state=latest
