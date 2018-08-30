@@ -11,7 +11,7 @@ In order to successfully create an OpenShift installation on GCE, be sure to hav
 * **Red Hat Subscription**: OpenShift requires a valid subscription to be able to install packages from Red Hat's repository.
 
 Besides that, it's important to have available
-* Ansible (latest: version 2.5)
+* Ansible (latest: version 2.6.3)
 * Apache LibCloud
 ```bash
 $ pip install apache-libcloud
@@ -32,13 +32,10 @@ labels:
 admin_username: demo
 admin_ssh_publickey: /home/demo/.ssh/id_rsa.pub
 
-openshift_master_url: master.example.com
-openshift_cloudapps_url: cloudapps.example.com
-
 openshift_users: { 'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0' }
 
-redhat_subscription_username: myuser
-redhat_subscription_password: mysecret
+redhat_subscription_username: my_redhat_subscription_username
+redhat_subscription_password: my_redhat_subscription_password
 
 gce_credentials_file: /root/demo/somefile.json
 gce_project_id: myproject

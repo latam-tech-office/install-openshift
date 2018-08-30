@@ -12,7 +12,7 @@ In order to successfully create an OpenShift installation on Azure, be sure to h
 
 
 Besides that, it's important to have available
-* Ansible (latest: version 2.5)
+* Ansible (latest: version 2.6.3)
 * Ansible's Module for Azure 
 ```bash
 $ pip install ansible[azure]
@@ -32,13 +32,10 @@ labels:
 admin_username: demo
 admin_ssh_publickey: /home/demo/.ssh/id_rsa.pub
 
-openshift_master_url: master.example.com
-openshift_cloudapps_url: cloudapps.example.com
-
 openshift_users: { 'demo': '$apr1$ucdyfv6b$EJFanTIfig6LR8cszOnKV0' }
 
-redhat_subscription_username: myuser
-redhat_subscription_password: mysecret
+redhat_subscription_username: my_redhat_subscription_username
+redhat_subscription_password: my_redhat_subscription_password
 
 azure_subscription_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 azure_tenant: yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
