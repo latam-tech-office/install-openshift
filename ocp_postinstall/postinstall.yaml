@@ -23,6 +23,9 @@
      - name: "Adding a nodeSelector into registry-console: {{ selector_infra }}"
        command: "oc patch deploymentconfig/registry-console --patch='{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"node-role.kubernetes.io/infra\": \"true\"}}}}}' --namespace default"
 
+     - name: "Rollout registry-console to be at: {{ selector_infra }}"
+       command: "oc rollout latest deploymentconfig/registry-console --namespace default"
+
      - name: "All pods in Project Default and OpenShift-Infra  must run on Infra Node"
        command: "oc patch namespace/{{ item }} --patch '{\"metadata\": {\"name\":\"{{ item }}\",\"annotations\":{\"openshift.io/node-selector\": \"{{ selector_infra }}\"}}}'"
        with_items:
