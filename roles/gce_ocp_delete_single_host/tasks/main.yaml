@@ -1,0 +1,13 @@
+- name: "Deleting instance: {{ openshift_hostname }}"
+  gce: instance_names={{ openshift_hostname }} state=absent zone={{ gce_zone }}
+       credentials_file={{ gce_credentials_file }}
+       project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete_single_host ]
+
+- name: "Deleting Static IP Address: {{ openshift_hostname }}"
+  gce_eip: name={{ openshift_hostname }} state=absent region={{ region }}
+           credentials_file={{ gce_credentials_file }}
+           project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete_single_host ]

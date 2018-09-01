@@ -1,0 +1,23 @@
+- name: "Delete instance: {{ openshift_hostname }}"
+  azure_rm_virtualmachine: name={{ openshift_hostname }} state=absent
+                           resource_group={{ name }} location={{ region }}
+                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                           client_id={{ azure_client_id }} secret={{ azure_secret }}
+  ignore_errors: True
+  tags: [ ocp, azure, delete_single_host ]
+
+- name: "Delete Network Interface: {{ openshift_hostname }}"
+  azure_rm_networkinterface: name={{ openshift_hostname }} state=absent
+                             resource_group={{ name }} location={{ region }}
+                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                             client_id={{ azure_client_id }} secret={{ azure_secret }}
+  ignore_errors: True
+  tags: [ ocp, azure, delete, delete_single_host ]
+
+- name: "Delete Public IP: {{ openshift_hostname }}"
+  azure_rm_publicipaddress: name={{ openshift_hostname }} state=absent
+                            resource_group={{ name }} location={{ region }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
+  ignore_errors: True
+  tags: [ ocp, azure, delete, delete_single_host ]

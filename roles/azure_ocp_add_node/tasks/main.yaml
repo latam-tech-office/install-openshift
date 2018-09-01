@@ -35,9 +35,9 @@
               location: "{{ region }}"
               os_type: Linux
               vm_size: "{{ node_machine_type }}"
-              managed_disk_type: "{{ azure_storage_account_type }}"
+              managed_disk_type: "{{ node_disk_type  }}"
               data_disks:
-                 - { lun: 0, managed_disk_type: "{{ azure_storage_account_type }}", disk_size_gb: "{{ node_docker_size }}" }
+                 - { lun: 0, managed_disk_type: "{{ node_docker_type }}", disk_size_gb: "{{ node_docker_size }}" }
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False
               ssh_public_keys:

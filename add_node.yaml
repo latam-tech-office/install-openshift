@@ -37,10 +37,11 @@
      - name: Compute the next node
        set_fact: next_node={{ number_of_nodes|int + 1 }}
 
-     - name: Replace on openshift.config
-       lineinfile: dest=openshift.config state=present create=False regexp="^number_of_nodes" line="number_of_nodes{{ ':' }} {{ next_node }}"
+     - name: "Setting the next hostname: {{ node_prefix }}{{ next_node }}"
+       set_fact: openshift_next_hostname="{{ node_prefix }}{{ next_node }}"
   roles:
-     - { role: "{{ cloud_provider }}_ocp_add_node", node_name: "{{ node_prefix }}{{ next_node }}" }
+     - { role: "{{ cloud_provider }}_ocp_delete_single_host", openshift_hostname: "{{ openshift_next_hostname }}" }
+     - { role: "{{ cloud_provider }}_ocp_add_node", node_name: "{{ openshift_next_hostname }}" }
 
 - name: "NODE: Applying Red Hat Subscription"
   hosts: openshift_node_group
@@ -79,3 +80,12 @@
      - cloud_provider/{{ cloud_provider }}
   roles:
      - { role: ocp_hosts_preparation }
+
+
+- name: "FINAL: Updating with a new number: {{ next_node }}"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Updating on openshift.config the number total nodes: {{ next_node }}"
+      lineinfile: dest=openshift.config state=present create=False regexp="^number_of_nodes" line="number_of_nodes{{ ':' }} {{ next_node }}"
