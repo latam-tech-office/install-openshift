@@ -1,4 +1,4 @@
-- name: "OPENSHIFT MASTER URL (Redefining): http://{{ master_public_ip }}.{{ dns_service_suffix }}:8443"
+- name: "OPENSHIFT MASTER URL (Redefining): https://{{ master_public_ip }}.{{ dns_service_suffix }}:8443"
   set_fact: openshift_master_url="{{ master_public_ip }}.{{ dns_service_suffix }}"
   when: openshift_master_url is not defined or openshift_master_url is none
 
