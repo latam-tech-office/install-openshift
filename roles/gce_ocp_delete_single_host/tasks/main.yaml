@@ -5,6 +5,27 @@
   ignore_errors: True
   tags: [ ocp, gce, delete_single_host ]
 
+- name: "Deleting disk: {{ openshift_hostname }}"
+  gce_pd: name={{ openshift_hostname }} state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete_single_host ]
+
+- name: "Deleting disk: {{ openshift_hostname }}-docker"
+  gce_pd: name="{{ openshift_hostname }}-docker" state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete_single_host ]
+
+- name: "Deleting disk: {{ openshift_hostname }}-gluster"
+  gce_pd: name="{{ openshift_hostname }}-gluster" state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ ocp, gce, delete_single_host ]
+
 - name: "Deleting Static IP Address: {{ openshift_hostname }}"
   gce_eip: name={{ openshift_hostname }} state=absent region={{ region }}
            credentials_file={{ gce_credentials_file }}

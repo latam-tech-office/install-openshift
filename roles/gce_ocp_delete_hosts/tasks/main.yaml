@@ -3,14 +3,21 @@
        credentials_file={{ gce_credentials_file }}
        project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
   ignore_errors: True
-  tags: [ ocp, gce, delete, bastion ]
+  tags: [ always ]
+
+- name: "BASTION: Deleting disk"
+  gce_pd: name={{ bastion_definition.hostname }} state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ always ]
 
 - name: "BASTION: Deleting Static IP Address"
   gce_eip: name={{ bastion_definition.hostname }} state=absent region={{ region }}
            credentials_file={{ gce_credentials_file }}
            project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
   ignore_errors: True
-  tags: [ ocp, gce, compute, static_ip, bastion ]
+  tags: [ always ]
 
 - name: "MASTER, INFRA and NODE: Deleting instance"
   gce: instance_names={{ item.hostname }} state=absent zone={{ gce_zone }}
@@ -18,7 +25,31 @@
        project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
   with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
   ignore_errors: True
-  tags: [ ocp, gce, delete, master ]
+  tags: [ always ]
+
+- name: "MASTER, INFRA and NODE: Deleting disk"
+  gce_pd: name={{ item.hostname }} state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  ignore_errors: True
+  tags: [ always ]
+
+- name: "MASTER, INFRA and NODE: Deleting docker disk"
+  gce_pd: name="{{ item.hostname }}-docker" state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
+  ignore_errors: True
+  tags: [ always ]
+
+- name: "INFRA: Deleting gluster disk"
+  gce_pd: name="{{ item.hostname }}-gluster" state=absent zone={{ gce_zone }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ infra_definition }}"
+  ignore_errors: True
+  tags: [ always ]
 
 - name: "MASTER and INFRA: Deleting Static IP Address"
   gce_eip: name={{ item.hostname }} state=absent region={{ region }}
@@ -26,4 +57,18 @@
            project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
   with_items: "{{ master_definition }}+{{ infra_definition }}"
   ignore_errors: True
-  tags: [ ocp, gce, compute, static_ip, master ]
+  tags: [ always ]
+
+- name: "MASTER: Deleting Load Balancer"
+  gce_lb: name=openshift-master region={{ region }} state=absent
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  ignore_errors: True
+  tags: [ always ]
+
+#- name: "INFRA: Deleting Load Balancer"
+#  gce_lb: name=openshift-infra region={{ region }} state=absent
+#          credentials_file={{ gce_credentials_file }}
+#          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+#  ignore_errors: True
+#  tags: [ always ]

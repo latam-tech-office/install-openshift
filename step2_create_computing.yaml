@@ -60,6 +60,7 @@
   become: True
   vars_files:
      - openshift.config
+     - cloud_provider/{{ cloud_provider }}
   roles: 
      - { role: ocp_url, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}" }
      - { role: ocp_bastion_preparation, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}", master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
