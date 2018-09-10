@@ -83,14 +83,21 @@
   register: master_instance_creation
   tags: [ ocp, gce, compute, vm, master ]
 
-- name: "MASTER: (First MASTER only) Public IP: {{ master_instance_creation.results[0].instance_data[0].public_ip }}"
-  set_fact: master_public_ip="{{ master_instance_creation.results[0].instance_data[0].public_ip }}"
+- name: "MASTER: Emptying master_definition"
+  set_fact: master_definition=[]
+  tags: [ ocp, gce, compute, vm, master ]
+
+- name: "MASTER: Recreating master_definition and including public and private IP"
+  set_fact: master_definition='{{ master_definition }}  + [ {{ new_item }} ]'
+  vars:
+     new_item: "{ 'hostname' : '{{ item._ansible_item_label.hostname }}', 'machine' : '{{ item._ansible_item_label.machine }}', 'disk_type' : '{{ item._ansible_item_label.disk_type }}', 'disk_size' : {{ item._ansible_item_label.disk_size }}, 'disk_docker_type' : '{{ item._ansible_item_label.disk_docker_type }}', 'disk_docker_size' : {{ item._ansible_item_label.disk_docker_size }}, 'public_ip' : '{{ item.instance_data[0].public_ip }}', 'private_ip' : '{{ item.instance_data[0].private_ip }}' }"
+  with_items: "{{ master_instance_creation.results }}"
   tags: [ ocp, gce, compute, vm, master ]
 
 - name: "MASTER: Adding group: openshift_master_group"
-  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_master_group
+  add_host: hostname={{ item.public_ip }} groups=openshift_master_group
             ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
-  with_items: "{{ master_instance_creation.results }}"
+  with_items: "{{ master_definition }}"
   tags: [ ocp, gce, compute, master ]
 
 - name: "INFRA: Creating Instance"
@@ -114,14 +121,25 @@
   register: infra_instance_creation
   tags: [ ocp, gce, compute, vm, infra ]
 
-- name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
-  set_fact: infra_public_ip="{{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
-  tags: [ ocp, gce, compute, vm, infra ]
+- name: "INFRA: Emptying infra_definition"
+  set_fact: infra_definition=[]
+  tags: [ ocp, gce, compute, infra ]
+
+- name: "INFRA: Recreating infra_definition and including public and private IP"
+  set_fact: infra_definition='{{ infra_definition }}  + [ {{ new_item }} ]'
+  vars:
+     new_item: "{ 'hostname' : '{{ item._ansible_item_label.hostname }}', 'machine' : '{{ item._ansible_item_label.machine }}', 'disk_type' : '{{ item._ansible_item_label.disk_type }}', 'disk_size' : {{ item._ansible_item_label.disk_size }}, 'disk_docker_type' : '{{ item._ansible_item_label.disk_docker_type }}', 'disk_docker_size' : {{ item._ansible_item_label.disk_docker_size }}, 'public_ip' : '{{ item.instance_data[0].public_ip }}', 'private_ip' : '{{ item.instance_data[0].private_ip }}' }"
+  with_items: "{{ infra_instance_creation.results }}"
+  tags: [ ocp, gce, compute, infra ]
+
+# - name: "INFRA: (First INFRA only) Public IP: {{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
+#  set_fact: infra_public_ip="{{ infra_instance_creation.results[0].instance_data[0].public_ip }}"
+#  tags: [ ocp, gce, compute, vm, infra ]
 
 - name: "INFRA: Adding group: openshift_infra_group"
-  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_infra_group
+  add_host: hostname={{ item.public_ip }} groups=openshift_infra_group
             ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
-  with_items: "{{ infra_instance_creation.results }}"
+  with_items: "{{ infra_definition }}"
   tags: [ ocp, gce, compute, infra ]
 
 - name: "NODE: Creating Instance"
@@ -144,10 +162,21 @@
   register: node_instance_creation
   tags: [ ocp, gce, compute, vm, node ]
 
-- name: "NODE: Adding group: openshift_node_group"
-  add_host: hostname={{ item.instance_data[0].public_ip }} groups=openshift_node_group
-            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
+- name: "NODE: Emptying node_definition"
+  set_fact: node_definition=[]
+  tags: [ ocp, gce, node ]
+
+- name: "NODE: Recreating node_definition and including public and private IP"
+  set_fact: node_definition='{{ node_definition }}  + [ {{ new_item }} ]'
+  vars:
+     new_item: "{ 'hostname' : '{{ item._ansible_item_label.hostname }}', 'machine' : '{{ item._ansible_item_label.machine }}', 'disk_type' : '{{ item._ansible_item_label.disk_type }}', 'disk_size' : {{ item._ansible_item_label.disk_size }}, 'disk_docker_type' : '{{ item._ansible_item_label.disk_docker_type }}', 'disk_docker_size' : {{ item._ansible_item_label.disk_docker_size }}, 'public_ip' : '{{ item.instance_data[0].public_ip }}', 'private_ip' : '{{ item.instance_data[0].private_ip }}' }"
   with_items: "{{ node_instance_creation.results }}"
+  tags: [ ocp, gce, infra ]
+
+- name: "NODE: Adding group: openshift_node_group"
+  add_host: hostname={{ item.public_ip }} groups=openshift_node_group
+            ansible_user={{ admin_username }} ansible_password={{ gce_base_image_password }}
+  with_items: "{{ node_definition }}"
   tags: [ ocp, azure, compute, node, add_host ]
 
 - name: "MASTER, INFRA and NODE: Attaching a Docker storage"
@@ -160,7 +189,55 @@
   with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
   tags: [ ocp, gce, compute, docker ]
 
+- name: "INFRA: Partioning for Gluster"
+  gce_pd: name="{{ item.hostname }}-gluster" state=present zone={{ gce_zone }}
+          mode=READ_WRITE
+          disk_type={{ infra_gluster_type }} size_gb={{ infra_gluster_size }}
+          delete_on_termination=True  instance_name={{ item.hostname }}
+          credentials_file={{ gce_credentials_file }}
+          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+  with_items: "{{ infra_definition }}"
+  tags: [ ocp, gce, compute, docker ]
+
 - name: "MASTER, INFRA and NODE: Waiting to be ready"
-  wait_for: host={{ item.instance_data[0].public_ip }} port=22 delay=30 state=started
-  with_items: "{{ master_instance_creation.results }}+{{ node_instance_creation.results }}+{{ infra_instance_creation.results }}"
+  wait_for: host={{ item.public_ip }} port=22 delay=30 state=started
+  with_items: "{{ master_definition }}+{{ infra_definition }}+{{ node_definition }}"
   tags: [ ocp, gce, compute, wait ]
+
+#- name: "MASTER: Creating members for master"
+#  set_fact: master_members="{{ master_members }} + [ '{{ gce_zone }}/{{ item.hostname }}' ]"
+#  with_items: "{{ master_definition }}"
+#  tags: [ ocp, gce, lb, master ]
+
+#- name: "MASTER: Creating Load Balancer for all instances"
+#  gce_lb: name=openshift-master region={{ region }} state=present
+#          port_range=8443 members="{{ master_members }}"
+#          credentials_file={{ gce_credentials_file }}
+#          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+#  register: master_loadbalancer_creation
+#  tags: [ ocp, gce, compute, lb, master ]
+
+#- name: "MASTER: Public IP: {{ master_loadbalancer_creation.external_ip }}"
+#  set_fact: master_public_ip="{{ master_loadbalancer_creation.external_ip }}"
+#  tags: [ ocp, gce, lb, master ]
+
+- name: "MASTER: Public IP (FIRST MASTER ONLY): {{ master_definition[0].public_ip }}"
+  set_fact: master_public_ip="{{ master_definition[0].public_ip }}"
+  tags: [ ocp, gce, master ]
+
+#- name: "INFRA: Creating members for infra"
+#  set_fact: infra_members="{{ infra_members }} + [ '{{ gce_zone }}/{{ item.hostname }}' ]"
+#  with_items: "{{ infra_definition }}"
+#  tags: [ ocp, gce, lb, infra ]
+
+#- name: "INFRA: Creating Load Balancer for all instances"
+#  gce_lb: name=openshift-infra region={{ region }} state=present
+#          port_range=80-1936 members="{{ infra_members }}"
+#          credentials_file={{ gce_credentials_file }}
+#          project_id={{ gce_project_id }} service_account_email={{ gce_service_account_email }}
+#  register: infra_loadbalancer_creation
+#  tags: [ ocp, gce, lb, infra ]
+
+- name: "INFRA: Public IP (FIRST INFRA ONLY): {{ infra_definition[0].public_ip }}"
+  set_fact: infra_public_ip="{{ infra_definition[0].public_ip }}"
+  tags: [ ocp, gce, lb, infra ]

@@ -3,6 +3,9 @@
 # Docker Partition on hosts
 docker_device: /dev/sdc
 
+# Gluster Partiion on hosts
+gluster_device: /dev/sdd
+
 # Details configuration for
 azure_base_image:
     offer: RHEL

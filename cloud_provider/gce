@@ -9,6 +9,9 @@ gce_zone: "{{ region }}-c"
 # Docker Partition on hosts
 docker_device: /dev/sdb
 
+# Gluster Partiion on hosts
+gluster_device: /dev/sdc
+
 # Image used to create instances
 gce_base_image: rhel74-40g
 gce_base_image_password: r3dh4t1!
@@ -27,11 +30,11 @@ master_prefix: "{{ name }}-master"
 # Available Machine Types for GCE: https://cloud.google.com/compute/docs/machine-types
 # Default value: n1-standard-4 (Standard machine type with 4 vCPUs and 15 GB of system memory)
 #                              Max number of persistent disks: 16, Max total PD size: 64 TB
-master_machine_type: "n1-standard-4"  
-# Options for disk_type: pd-standard OR pd-ssd
+master_machine_type: "n1-standard-8"  
+# Options for disk_type: pd-standard OR pd-standard
 master_disk_type: "pd-standard" 
 master_disk_size: 100
-# Options for disk_type: pd-standard OR pd-ssd
+# Options for disk_type: pd-standard OR pd-standard
 master_docker_type: "pd-standard"
 master_docker_size: 20
 
@@ -40,13 +43,15 @@ infra_prefix: "{{ name }}-infra"
 # Available Machine Types for GCE: https://cloud.google.com/compute/docs/machine-types
 # Default value: n1-standard-4 (Standard machine type with 4 vCPUs and 15 GB of system memory)
 #                              Max number of persistent disks: 16, Max total PD size: 64 TB
-infra_machine_type: "n1-standard-4"     
-# Options for disk_type: pd-standard OR pd-ssd
+infra_machine_type: "n1-standard-8"     
+# Options for disk_type: pd-standard OR pd-standard
 infra_disk_type: "pd-standard"          
 infra_disk_size: 40
-# Options for disk_type: pd-standard OR pd-ssd
+# Options for disk_type: pd-standard OR pd-standard
 infra_docker_type: "pd-standard"
 infra_docker_size: 20
+infra_gluster_type: "pd-standard"
+infra_gluster_size: 300
 
 # NODE Definitions
 node_prefix: "{{ name }}-node"
@@ -54,9 +59,9 @@ node_prefix: "{{ name }}-node"
 # Default value: n1-standard-2 (Standard machine type with 2 vCPUs and 7.5 GB of system memory)
 #                              Max number of persistent disks: 16, Max total PD size: 64 TB
 node_machine_type: "n1-standard-2" 
-# Options for disk_type: pd-standard OR pd-ssd
+# Options for disk_type: pd-standard OR pd-standard
 node_disk_type: "pd-standard" 
 node_disk_size: 40
-# Options for disk_type: pd-standard OR pd-ssd
+# Options for disk_type: pd-standard OR pd-standard
 node_docker_type: "pd-standard"
 node_docker_size: 20

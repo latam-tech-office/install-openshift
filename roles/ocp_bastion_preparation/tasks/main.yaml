@@ -73,3 +73,7 @@
 #- name: Generating OpenShift PostInstall script
 #  template: src=postinstall/post-openshift-install.sh.j2 dest=/root/postinstall/post-openshift-install.sh mode=a+x
 #  tags: [ ocp, prepare_bastion ]
+
+- name: (LOCAL) Generating a Local inventory for debug purposes
+  local_action: template src=inventory_for_debug.j2 dest=inventory_for_debug
+  tags: [ ocp, prepare_bastion ]
