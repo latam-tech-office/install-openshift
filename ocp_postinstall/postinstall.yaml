@@ -13,6 +13,9 @@
        retries: 120
        delay: 60
 
+     - name: "Make sure GlusterFS is the default Storageclass"
+       command: oc annotate storageclass glusterfs-storage storageclass.kubernetes.io/is-default-class=true
+
      - name: "Modify configuration in Master, so all Pods will be create in {{ selector_compute }}"
        lineinfile: dest=/etc/origin/master/master-config.yaml  state=present regexp="defaultNodeSelector" line='  defaultNodeSelector{{ ':' }} "{{ selector_compute }}"'
 #       notify: "OpenShift Master Restart"
