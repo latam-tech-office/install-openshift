@@ -60,3 +60,7 @@
 - name: "Ensure Certified Containers can be run"
   command: /usr/libexec/rhsmcertd-worker
   tags: [ ocp, prepare_hosts ]
+
+- name: "Ensure each host has the right hostname"
+  command: hostnamectl set-hostname {{ ansible_hostname }}
+  tags: [ ocp, prepare_hosts ]
