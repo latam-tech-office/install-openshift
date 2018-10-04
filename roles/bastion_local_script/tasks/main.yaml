@@ -6,3 +6,4 @@
       - add_node.sh
   when: bastion_public_ip is defined and bastion_public_ip is not none
   become: False
+  tags: [ ocp, bastion ]

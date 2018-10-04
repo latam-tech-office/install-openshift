@@ -1,62 +1,62 @@
 - name: "RED HAT SUBSCRIPTION: Installing Red Hat's Subscription Manager"
   yum: name=subscription-manager state=latest
   ignore_errors: True
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Registering to Red Hat's Subscription Manager"
   command: subscription-manager register --username={{ redhat_subscription_username }}  --password={{ redhat_subscription_password }} --force
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Delete a temporary existing file (if exists) /tmp/repositories_available.txt"
   file: path=/tmp/repositories_available.txt state=absent
   when: redhat_subscription_pool_id is not defined or redhat_subscription_pool_id is none
   ignore_errors: True
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: List of all possible repositories available"
   shell: subscription-manager list --available > /tmp/repositories_available.txt
   when: redhat_subscription_pool_id is not defined or redhat_subscription_pool_id is none
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Fetching information about the subscription: {{ subscription_name }} type: {{ subscription_type }}"
   command: "sed -n '/Subscription Name:   {{ subscription_name }}/{p; :loop n; p; /System Type:         {{ subscription_type }}/q; b loop}' /tmp/repositories_available.txt"
   register: subscription_info
   when: redhat_subscription_pool_id is not defined or redhat_subscription_pool_id is none
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Fetching Pool ID in this subscription"
   set_fact: redhat_subscription_pool_id={{ subscription_info.stdout | regex_replace("(?s)^.*?Pool ID:\s+", "") |
                                                                     regex_replace("(?s)\\n.*$","") }}
   when: redhat_subscription_pool_id is not defined or redhat_subscription_pool_id is none
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Attaching a Pool ID: {{ redhat_subscription_pool_id }}"
   command: subscription-manager attach --pool={{ redhat_subscription_pool_id }}
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Disable all Repositories"
   command: subscription-manager repos --disable="*"
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "RED HAT SUBSCRIPTION: Enabling Repository"
   command: subscription-manager repos --enable={{ item }}
   with_items: "{{ repositories }}"
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "Searching for all files *.repo"
   find: path=/etc/yum.repos.d pattern="*.repo"
   register: result_repos
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "Deleting everything but redhat.repo"
   file: path="{{ item.path }}" state=absent
   with_items: "{{ result_repos.files }}"
   when: '"redhat.repo" not in item.path'
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "Updating the entire host. It might take a long time"
   yum: name="*" state=latest
-  tags: [ ocp, redhat_subscription ]
+  tags: [ always ]
 
 - name: "Rebooting host"
   shell: sleep 10 && /sbin/shutdown -r now
@@ -64,9 +64,9 @@
   poll: 0
   become: True
   ignore_errors: True
-  tags: [ ocp, redhat_subscription, reboot ]
+  tags: [ always ]
 
 - name: "Waiting for Server to come back"
   local_action: wait_for host={{ inventory_hostname }} port=22 delay=30 timeout=600 state=started
   become: False
-  tags: [ ocp, redhat_subscription, reboot ]
+  tags: [ always ]

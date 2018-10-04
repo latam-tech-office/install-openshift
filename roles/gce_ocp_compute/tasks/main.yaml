@@ -44,6 +44,10 @@
             bastion_public_ip={{ bastion_public_ip }}
   tags: [ ocp, gce, compute, bastion ]
 
+- name: "BASTION: Waiting to be ready"
+  wait_for: host={{ bastion_public_ip }} port=22 delay=30 state=started
+  tags: [ ocp, gce, bastion, wait ]
+
 - name: "MASTER and INFRA: Creating Static IP Address"
   gce_eip: name={{ item.hostname }} state=present region={{ region }}
            credentials_file={{ gce_credentials_file }}
