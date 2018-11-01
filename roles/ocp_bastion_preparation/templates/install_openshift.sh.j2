@@ -1,14 +1,14 @@
 #!/bin/bash
 set -xe
-# ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/adhoc/uninstall.yml
+ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/adhoc/uninstall.yml
 ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml
 ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml
 #ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/create_persistentvolumes.yaml -e nfs_server={{ master_definition[0].hostname }}
-ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/postinstall.yaml
+#ansible-playbook -i /root/postinstall/hosts_postinstall /root/postinstall/postinstall.yaml
 {% if slack_token is defined and slack_token is not none %}
 ansible localhost -m slack -a "token={{ slack_token }} msg='{{ slack_message_when_ready }}'"
 {% endif %}
-ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-management/config.yml -e openshift_management_install_management=true -e openshift_management_app_template=cfme-template -e openshift_management_storage_class=preconfigured
+#ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-management/config.yml -e openshift_management_install_management=true -e openshift_management_app_template=cfme-template -e openshift_management_storage_class=preconfigured
 #ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-management/config.yml -e openshift_management_install_management=true -e openshift_management_app_template=cfme-template -e openshift_management_storage_nfs_external_hostname=cloudforms.{{ openshift_cloudapps_url }} -e openshift_management_storage_nfs_local_hostname={{ master_definition[0].hostname }}
-#/root/postinstall/install_eclipse_che.sh
+/root/postinstall/install_eclipse_che.sh
 #/root/postinstall/install_bluegreen_canary.sh

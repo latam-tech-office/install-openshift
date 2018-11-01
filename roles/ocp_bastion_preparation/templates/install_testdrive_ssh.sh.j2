@@ -1,0 +1,5 @@
+git clone https://github.com/latam-tech-office/testdrive-cicd
+pushd testdrive-cicd/wetty
+oc create -f wetty-scc.yaml
+oc create -f testdrive-ssh.yaml -n openshift
+popd
