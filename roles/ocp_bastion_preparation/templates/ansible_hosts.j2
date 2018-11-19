@@ -17,8 +17,8 @@ nodes
 {% endfor %}
 
 [glusterfs]
-{% for infra in infra_definition %}
-{{ infra.hostname }} glusterfs_devices='[ "{{ gluster_device }}" ]' openshift_hostname={{ infra.hostname }} ipv4addr={{ infra.private_ip }}
+{% for gluster in gluster_definition %}
+{{ gluster.hostname }} glusterfs_devices='[ "{{ gluster_device }}" ]' openshift_hostname={{ gluster.hostname }} ipv4addr={{ gluster.private_ip }}
 {% endfor %}
 
 [apps]
@@ -40,6 +40,9 @@ nodes
 {% endfor %}
 {% for node in node_definition %}
 {{ node.hostname }} openshift_node_group_name='node-config-compute' openshift_hostname={{ node.hostname }} ipv4addr={{ node.private_ip }}
+{% endfor %}
+{% for gluster in gluster_definition %}
+{{ gluster.hostname }} openshift_node_group_name='node-config-infra' openshift_hostname={{ gluster.hostname }} ipv4addr={{ gluster.private_ip }}
 {% endfor %}
 
 [OSEv3:vars]
@@ -131,4 +134,3 @@ openshift_storage_glusterfs_heketi_image=registry.access.redhat.com/rhgs3/rhgs-v
 openshift_storage_glusterfs_image=registry.access.redhat.com/rhgs3/rhgs-server-rhel7
 openshift_storage_glusterfs_block_image=registry.access.redhat.com/rhgs3/rhgs-gluster-block-prov-rhel7
 openshift_storage_glusterfs_s3_image=registry.access.redhat.com/rhgs3/rhgs-gluster-s3-server-rhel7
-

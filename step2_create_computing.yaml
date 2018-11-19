@@ -46,7 +46,7 @@
      - { role: aws_route53 }
 
 - name: "ALL: Applying Red Hat Subscription"
-  hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
+  hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group, openshift_gluster_group
   gather_facts: True
   become: True
   vars_files:
