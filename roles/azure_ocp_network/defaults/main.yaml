@@ -19,6 +19,11 @@ network_subnet_openshift_node_prefix: "10.2.0.0/16"
 network_security_group_node:
    - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
 
+# OpenShift Gluster Networking specifics (for Storage)
+network_subnet_openshift_gluster_prefix: "10.3.0.0/16"
+network_security_group_gluster:
+   - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }
+
 # OpenShift Bastion Networking specifics
 network_security_group_bastion:
    - { name: "enable_ssh", protocol: "Tcp", destination_port_range: 22,   access: "Allow", priority: 101, direction: "Inbound" }

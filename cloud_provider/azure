@@ -4,7 +4,7 @@
 docker_device: /dev/sdc
 
 # Gluster Partiion on hosts
-gluster_device: /dev/sdd
+gluster_device: /dev/sdc
 
 # Details configuration for
 azure_base_image:
@@ -29,11 +29,11 @@ master_prefix: "{{ name }}-master"
 # Default value: Standard_E2s_v3, 2 vCPU, 16 Gb, Memory Optimized, Esv3-series
 master_machine_type: "Standard_E2s_v3"
 # Options for master_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-master_disk_type: "Premium_LRS"
-master_disk_size: 100
+master_disk_type: "Standard_LRS"
+master_disk_size: 256
 # Options for master_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-master_docker_type: "Premium_LRS"
-master_docker_size: 20
+master_docker_type: "Standard_LRS"
+master_docker_size: 32
 master_public_ip_allocation: Static
 
 # INFRA Definitions
@@ -42,11 +42,11 @@ infra_prefix: "{{ name }}-infra"
 # Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
 infra_machine_type: "Standard_D4s_v3"
 # Options for infra_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-infra_disk_type: "Premium_LRS"
-infra_disk_size: 40
+infra_disk_type: "Standard_LRS"
+infra_disk_size: 64
 # Options for infra_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-infra_docker_type: "Premium_LRS"
-infra_docker_size: 20
+infra_docker_type: "Standard_LRS"
+infra_docker_size: 32
 infra_public_ip_allocation: Static
 
 # NODE Definitions
@@ -55,9 +55,19 @@ node_prefix: "{{ name }}-node"
 # Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
 node_machine_type: "Standard_D4s_v3"
 # Options for node_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-node_disk_type: "Premium_LRS"
-node_disk_size: 40
+node_disk_type: "Standard_LRS"
+node_disk_size: 64
 # Options for node_docker_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-node_docker_type: "Premium_LRS"
-node_docker_size: 20
+node_docker_type: "Standard_LRS"
+node_docker_size: 32
 node_public_ip_allocation: Static
+
+# GLUSTER Definitions
+gluster_prefix: "{{ name }}-gluster"
+# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
+# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
+gluster_machine_type: "Standard_D4s_v3"
+# Options for infra_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
+gluster_disk_type: "Standard_LRS"
+gluster_disk_size: 512
+gluster_public_ip_allocation: Static

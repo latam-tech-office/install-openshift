@@ -35,6 +35,16 @@
                    client_id={{ azure_client_id }} secret={{ azure_secret }}
   tags: [ ocp, azure, network ]
 
+- name: "GLUSTER: Creating Subnet {{ name }}-gluster for Storage: {{ network_subnet_openshift_gluster_prefix }}"
+  azure_rm_subnet: name="{{ name }}-gluster" state=present
+                   resource_group={{ name }}
+                   virtual_network_name={{ name }}
+                   address_prefix_cidr={{ network_subnet_openshift_gluster_prefix }}
+                   tags={{ labels }}
+                   subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                   client_id={{ azure_client_id }} secret={{ azure_secret }}
+  tags: [ ocp, azure, network ]
+
 - name: "MASTER: Creating Network Security Group (aka SG): {{ name }}-master-sg"
   azure_rm_securitygroup: name="{{ name }}-master-sg" state=present
                           resource_group={{ name }} location={{ region }}
@@ -57,6 +67,15 @@
   azure_rm_securitygroup: name="{{ name }}-node-sg" state=present
                           resource_group={{ name }} location={{ region }}
                           rules={{ network_security_group_node }}
+                          tags={{ labels }}
+                          subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                          client_id={{ azure_client_id }} secret={{ azure_secret }}
+  tags: [ ocp, azure, network ]
+
+- name: "GLUSTER: Creating Network Security Group (aka SG): {{ name }}-gluster-sg"
+  azure_rm_securitygroup: name="{{ name }}-gluster-sg" state=present
+                          resource_group={{ name }} location={{ region }}
+                          rules={{ network_security_group_gluster }}
                           tags={{ labels }}
                           subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                           client_id={{ azure_client_id }} secret={{ azure_secret }}

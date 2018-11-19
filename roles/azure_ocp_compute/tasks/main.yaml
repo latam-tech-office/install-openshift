@@ -69,7 +69,7 @@
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
-  with_items: "{{ master_definition }}"
+  loop: "{{ master_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, public_ip, master ]
 
 - name: "MASTER: Creating Network Interface"
@@ -90,7 +90,7 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ master_definition }}"
+  loop: "{{ master_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, network_interfaces, master ]
 
 - name: "MASTER: Creating instances"
@@ -118,7 +118,7 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ master_definition }}"
+  loop: "{{ master_definition | flatten(levels=1) }}"
   register: master_instance_creation
   tags: [ ocp, azure, compute, vm, master ]
 
@@ -129,7 +129,7 @@
 - name: "MASTER: Adding group: openshift_master_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_master_group
             ansible_user={{ admin_username }}
-  with_items: "{{ master_instance_creation.results }}"
+  loop: "{{ master_instance_creation.results | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, master ]
 
 - name: "INFRA: Creating Public IP. Allocation: {{ infra_public_ip_allocation }}"
@@ -139,7 +139,7 @@
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
-  with_items: "{{ infra_definition }}"
+  loop: "{{ infra_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, public_ip, infra ]
 
 - name: "INFRA: Creating Network Interface"
@@ -160,7 +160,7 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ infra_definition }}"
+  loop: "{{ infra_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, network_interfaces, infra ]
 
 - name: "INFRA: Creating instances"
@@ -188,7 +188,7 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ infra_definition }}"
+  loop: "{{ infra_definition | flatten(levels=1) }}"
   register: infra_instance_creation
   tags: [ ocp, azure, compute, vm, infra ]
 
@@ -199,7 +199,7 @@
 - name: "INFRA: Adding group: openshift_infra_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_infra_group
             ansible_user={{ admin_username }}
-  with_items: "{{ infra_instance_creation.results }}"
+  loop: "{{ infra_instance_creation.results | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, infra ]
 
 - name: "NODE: Creating Public IP. Allocation: {{ node_public_ip_allocation }}"
@@ -209,7 +209,7 @@
                             tags={{ labels }}
                             subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
                             client_id={{ azure_client_id }} secret={{ azure_secret }}
-  with_items: "{{ infra_definition }}"
+  loop: "{{ infra_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, public_ip, node ]
 
 - name: "NODE: Creating Network Interface"
@@ -230,7 +230,7 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ node_definition }}"
+  loop: "{{ node_definition | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, network_interfaces, node ]
 
 - name: "NODE: Creating instances"
@@ -258,12 +258,78 @@
               tenant: "{{ azure_tenant }}"
               client_id: "{{ azure_client_id }}"
               secret: "{{ azure_secret }}"
-  with_items: "{{ node_definition }}"
+  loop: "{{ node_definition | flatten(levels=1) }}"
   register: node_instance_creation
   tags: [ ocp, azure, compute, vm, node ]
 
 - name: "NODE: Adding group: openshift_node_group"
   add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_node_group
             ansible_user={{ admin_username }} 
-  with_items: "{{ node_instance_creation.results }}"
+  loop: "{{ node_instance_creation.results | flatten(levels=1) }}"
   tags: [ ocp, azure, compute, node ]
+
+- name: "GLUSTER: Creating Public IP. Allocation: {{ gluster_public_ip_allocation }}"
+  azure_rm_publicipaddress: name={{ item.hostname }} state=present
+                            resource_group={{ name }} location={{ region }}
+                            allocation_method={{ gluster_public_ip_allocation }}
+                            tags={{ labels }}
+                            subscription_id={{ azure_subscription_id }} tenant={{ azure_tenant }}
+                            client_id={{ azure_client_id }} secret={{ azure_secret }}
+  loop: "{{ gluster_definition | flatten(levels=1) }}"
+  tags: [ ocp, azure, compute, public_ip, gluster ]
+
+- name: "GLUSTER: Creating Network Interface"
+  azure_rm_networkinterface:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              virtual_network: "{{ name }}"
+              subnet: "{{ name }}-gluster"
+              ip_configurations:
+                - name: "{{ item.hostname }}"
+                  public_ip_address_name: "{{ item.hostname }}"
+                  public_ip_allocation_method: "{{ gluster_public_ip_allocation }}"
+              security_group: "{{ name }}-gluster-sg"
+              tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
+  loop: "{{ gluster_definition | flatten(levels=1) }}"
+  tags: [ ocp, azure, compute, network_interfaces, gluster ]
+
+- name: "GLUSTER: Creating instances"
+  azure_rm_virtualmachine:
+              name: "{{ item.hostname }}"
+              state: present
+              resource_group: "{{ name }}"
+              location: "{{ region }}"
+              os_type: Linux
+              vm_size: "{{ item.machine }}"
+              managed_disk_type: "{{ item.disk_type }}"
+#              data_disks:
+#                 - { lun: 0, managed_disk_type: "{{ item.disk_docker_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
+              admin_username: "{{ admin_username }}"
+              ssh_password_enabled: False
+              ssh_public_keys:
+                 - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+                   key_data: "{{ lookup('file','{{ admin_ssh_publickey }}') }}"
+              network_interfaces: "{{ item.hostname }}"
+              subnet: "{{ name }}-gluster"
+              image: "{{ azure_base_image }}"
+              remove_on_absent: All
+              tags: "{{ labels }}"
+              subscription_id: "{{ azure_subscription_id }}"
+              tenant: "{{ azure_tenant }}"
+              client_id: "{{ azure_client_id }}"
+              secret: "{{ azure_secret }}"
+  loop: "{{ gluster_definition | flatten(levels=1) }}"
+  register: gluster_instance_creation
+  tags: [ ocp, azure, compute, vm, gluster ]
+
+- name: "GLUSTER: Adding group: openshift_gluster_group"
+  add_host: hostname={{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }} groups=openshift_gluster_group
+            ansible_user={{ admin_username }}
+  loop: "{{ gluster_instance_creation.results | flatten(levels=1) }}"
+  tags: [ ocp, azure, compute, gluster ]
