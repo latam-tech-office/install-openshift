@@ -1,2 +1,0 @@
-docker_device: /dev/sdc
-docker_device_partition: "{{ docker_device }}1"
