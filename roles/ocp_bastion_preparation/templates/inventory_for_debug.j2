@@ -1,17 +1,17 @@
 [openshift_bastion]
-{{ bastion_public_ip }} ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
+{{ bastion_public_ip }} ansible_user={{ admin_username }}  {% if gce_base_image_password is defined %}ansible_password={{ gce_base_image_password }}{% endif %}
 
 [openshift_master_group]
 {% for master in master_definition %}
-{{ master.public_ip }} ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
+{{ master.public_ip }} ansible_user={{ admin_username }}  {% if gce_base_image_password is defined %}ansible_password={{ gce_base_image_password }}{% endif %}
 {% endfor %}
 
 [openshift_infra_group]
 {% for infra in infra_definition %}
-{{ infra.public_ip }} ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
+{{ infra.public_ip }} ansible_user={{ admin_username }}  {% if gce_base_image_password is defined %}ansible_password={{ gce_base_image_password }}{% endif %}
 {% endfor %}
 
 [openshift_node_group]
 {% for node in node_definition %}
-{{ node.public_ip }} ansible_user={{ admin_username }}  ansible_password={{ gce_base_image_password }}
+{{ node.public_ip }} ansible_user={{ admin_username }}  {% if gce_base_image_password is defined %}ansible_password={{ gce_base_image_password }}{% endif %}
 {% endfor %}

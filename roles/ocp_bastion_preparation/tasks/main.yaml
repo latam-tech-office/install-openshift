@@ -29,7 +29,7 @@
 
 - name: "Installing OpenShift Utils and other packages"
   yum: name="{{ item }}" state=latest
-  with_items: "{{ bastion_packages }}"
+  loop: "{{ bastion_packages | flatten(levels=1) }}"
   tags: [ ocp, bastion ]
 
 - name: Define the final Inventory for installation

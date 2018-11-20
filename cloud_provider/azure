@@ -4,7 +4,7 @@
 docker_device: /dev/sdc
 
 # Gluster Partiion on hosts
-gluster_device: /dev/sdc
+gluster_device: /dev/sdd
 
 # Details configuration for
 azure_base_image:
@@ -48,6 +48,8 @@ infra_disk_size: 64
 infra_docker_type: "Standard_LRS"
 infra_docker_size: 32
 infra_public_ip_allocation: Static
+infra_gluster_type: "Standard_LRS"
+infra_gluster_size: 300
 
 # NODE Definitions
 node_prefix: "{{ name }}-node"
@@ -61,13 +63,3 @@ node_disk_size: 64
 node_docker_type: "Standard_LRS"
 node_docker_size: 32
 node_public_ip_allocation: Static
-
-# GLUSTER Definitions
-gluster_prefix: "{{ name }}-gluster"
-# Available Machine Types for Azure: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes
-# Default value: Standard_D4s_v3, 4 vCPU, 16 Gb, General Purpose, Dsv3-series
-gluster_machine_type: "Standard_D4s_v3"
-# Options for infra_disk_type: Standard_LRS (for Standard HDD) or Premium_LRS (for Premium SSD)
-gluster_disk_type: "Standard_LRS"
-gluster_disk_size: 512
-gluster_public_ip_allocation: Static

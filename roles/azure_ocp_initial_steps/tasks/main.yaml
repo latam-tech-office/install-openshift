@@ -43,10 +43,3 @@
      new_item: "{ 'hostname' : '{{ node_prefix }}{{ item }}', 'machine' : '{{ node_machine_type }}', 'disk_type' : '{{ node_disk_type }}', 'disk_size' : {{ node_disk_size }}, 'disk_docker_type' : '{{ node_docker_type }}', 'disk_docker_size' : {{ node_docker_size }} }"
   with_sequence: start=1 end="{{ number_of_nodes }}"
   tags: [ always ]
-
-- name: Creating gluster_definition
-  set_fact: gluster_definition='{{ gluster_definition + [ new_item ] }}'
-  vars:
-     new_item: "{ 'hostname' : '{{ gluster_prefix }}{{ item }}', 'machine' : '{{ gluster_machine_type }}', 'disk_type' : '{{ gluster_disk_type }}', 'disk_size' : {{ gluster_disk_size }}, 'disk_docker_type' : 'NOT_USED', 'disk_docker_size' : 0 }"
-  with_sequence: start=1 end="{{ number_of_gluster }}"
-  tags: [ always ]

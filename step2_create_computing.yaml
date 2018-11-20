@@ -46,7 +46,7 @@
      - { role: aws_route53 }
 
 - name: "ALL: Applying Red Hat Subscription"
-  hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group, openshift_gluster_group
+  hosts: openshift_bastion, openshift_master_group, openshift_infra_group, openshift_node_group
   gather_facts: True
   become: True
   vars_files:
@@ -66,7 +66,7 @@
      - { role: ocp_bastion_preparation, master_public_ip: "{{ hostvars['localhost']['master_public_ip'] }}", infra_public_ip: "{{ hostvars['localhost']['infra_public_ip'] }}", master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
      - { role: bastion_local_script, bastion_public_ip: "{{ hostvars['localhost']['bastion_public_ip'] }}" }
 
-- name: "OPENSHIFT: Preparing Hosts"
+- name: "OPENSHIFT: Preparing Hosts and Setting Docker"
   hosts: openshift_master_group, openshift_infra_group, openshift_node_group
   gather_facts: False
   become: True
@@ -74,7 +74,8 @@
      - openshift.config
      - cloud_provider/{{ cloud_provider }}
   roles: 
-     - { role: ocp_hosts_preparation, master_definition: "{{ hostvars['localhost']['master_definition'] }}", infra_definition: "{{ hostvars['localhost']['infra_definition'] }}", node_definition: "{{ hostvars['localhost']['node_definition'] }}" }
+     - { role: ocp_hosts_preparation }
+     - { role: ocp_docker_preparation }
 
 - name: "Final Steps"
   hosts: localhost

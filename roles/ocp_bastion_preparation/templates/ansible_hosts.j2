@@ -17,8 +17,8 @@ nodes
 {% endfor %}
 
 [glusterfs]
-{% for gluster in gluster_definition %}
-{{ gluster.hostname }} glusterfs_devices='[ "{{ gluster_device }}" ]' openshift_hostname={{ gluster.hostname }} ipv4addr={{ gluster.private_ip }}
+{% for infra in infra_definition %}
+{{ infra.hostname }} glusterfs_devices='[ "{{ gluster_device }}" ]' openshift_hostname={{ infra.hostname }} ipv4addr={{ infra.private_ip }}
 {% endfor %}
 
 [apps]
@@ -40,9 +40,6 @@ nodes
 {% endfor %}
 {% for node in node_definition %}
 {{ node.hostname }} openshift_node_group_name='node-config-compute' openshift_hostname={{ node.hostname }} ipv4addr={{ node.private_ip }}
-{% endfor %}
-{% for gluster in gluster_definition %}
-{{ gluster.hostname }} openshift_node_group_name='node-config-infra' openshift_hostname={{ gluster.hostname }} ipv4addr={{ gluster.private_ip }}
 {% endfor %}
 
 [OSEv3:vars]

@@ -1,0 +1,7 @@
+docker_device: /dev/sdc
+docker_device_partition: "{{ docker_device }}1"
+prefetch_images: 
+    - { name: "ose-node",      image: "registry.access.redhat.com/openshift3/ose-node:v3.10" }
+    - { name: "control-plane", image: "registry.access.redhat.com/openshift3/ose-control-plane:v3.10" }
+    - { name: "ose-pod",       image: "registry.access.redhat.com/openshift3/ose-pod:v3.10" }
+    - { name: "etcd",          image: "registry.access.redhat.com/rhel7/etcd:3.2.22" }
