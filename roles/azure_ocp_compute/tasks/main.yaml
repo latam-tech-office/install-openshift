@@ -187,7 +187,7 @@
               managed_disk_type: "{{ item.disk_type }}"
               data_disks:
                  - { lun: 0, managed_disk_type: "{{ item.disk_docker_type }}", disk_size_gb: "{{ item.disk_docker_size }}" }
-                 - { lun: 1, managed_disk_type: "{{ item.infra_gluster_type }}", disk_size_gb: "{{ item.nfra_gluster_size }}" }
+                 - { lun: 1, managed_disk_type: "{{ infra_gluster_type }}", disk_size_gb: "{{ infra_gluster_size }}" }
               admin_username: "{{ admin_username }}"
               ssh_password_enabled: False
               ssh_public_keys:
