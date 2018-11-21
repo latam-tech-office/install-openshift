@@ -33,11 +33,15 @@
   command: /usr/libexec/rhsmcertd-worker
   tags: [ ocp, prepare_docker ]
 
-- name: "Starting Docker Container"
-  service: name=docker state=restarted
-  tags: [ ocp, prepare_docker ]
+#- name: "Installing Docker"
+#  yum: name=docker state=latest
+#  tags: [ ocp, prepare_docker ]
 
-- name: "Prefetch some container images"
-  docker_container: name={{ item.name }} image={{ item.image }} state=stopped
-  loop: "{{ prefetch_images | flatten(levels=1) }}"
-  tags: [ ocp, prepare_docker ]
+#- name: "Starting Docker Container"
+#  service: name=docker state=restarted
+#  tags: [ ocp, prepare_docker ]
+
+#- name: "Prefetch some container images"
+#  docker_container: name={{ item.name }} image={{ item.image }} state=stopped
+#  loop: "{{ prefetch_images | flatten(levels=1) }}"
+#  tags: [ ocp, prepare_docker ]
