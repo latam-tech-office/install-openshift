@@ -43,34 +43,68 @@ nodes
 {% endfor %}
 
 [OSEv3:vars]
-ansible_ssh_user=root
-ansible_become=true
+###########################################################################
+### Ansible Vars
+###########################################################################
+timeout=60
+ansible_user=root
+ansible_become=True
+log_path=/root
 
 # OpenShift Basic Vars
-openshift_release=v3.10
+openshift_image_tag=v3.11
+openshift_pgk_version=v3.11
+openshift_release=3.11
 openshift_deployment_type=openshift-enterprise
-openshift_examples_modify_imagestreams=true
-openshift_disable_check=memory_availability
+openshift_disable_check=disk_availability,docker_storage,memory_availability
+
+openshift_node_groups=[{'name': 'node-config-master', 'labels': ['node-role.kubernetes.io/master=true','runtime=docker']}, {'name': 'node-config-infra', 'labels': ['node-role.kubernetes.io/infra=true','runtime=docker']}, {'name': 'node-config-glusterfs', 'labels': ['runtime=docker']}, {'name': 'node-config-compute', 'labels': ['node-role.kubernetes.io/compute=true','runtime=docker'], 'edits': [{ 'key': 'kubeletArguments.pods-per-core','value': ['20']}, { 'key': 'image-gc-high-threshold', 'value': ['85']}, { 'key': 'image-gc-low-threshold', 'value': ['75']}]}]
+
+# Configure logrotate scripts
+# See: https://github.com/nickhammond/ansible-logrotate
+logrotate_scripts=[{"name": "syslog", "path": "/var/log/cron\n/var/log/maillog\n/var/log/messages\n/var/log/secure\n/var/log/spooler\n", "options": ["daily", "rotate 7","size 500M", "compress", "sharedscripts", "missingok"], "scripts": {"postrotate": "/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true"}}]
+
+# Deploy Operator Lifecycle Management Tech Preview
+openshift_enable_olm=true
+
+##########################################################################
+### OpenShift Registries Locations
+###########################################################################
+
+oreg_url=registry.redhat.io/openshift3/ose-${component}:${version}
+oreg_auth_user={{ redhat_subscription_username }}
+oreg_auth_password={{ redhat_subscription_password }}
+
+# For Operator Framework Images
+openshift_additional_registry_credentials=[{'host':'registry.connect.redhat.com','user':'openshift-enterprise','password':'EgNVuisQMHcd','test_image':'mongodb/enterprise-operator:0.3.2'}]
 
 # Enable cockpit
 osm_use_cockpit=true 
 osm_cockpit_plugins=['cockpit-kubernetes']
 
 # OpenShift Master Vars
+openshift_master_cluster_method=native
 openshift_master_cluster_hostname={{ openshift_master_url }}
 openshift_master_cluster_public_hostname={{ openshift_master_url }}
 openshift_master_default_subdomain={{ openshift_cloudapps_url }}
 openshift_master_api_port=8443
 openshift_master_console_port=8443
+openshift_master_overwrite_named_certificates=True
+
+openshift_set_hostname=True
+openshift_clock_enabled=True
+
+openshift_examples_modify_imagestreams=true
 
 # OpenShift Authentication Vars
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 openshift_master_htpasswd_users={{ openshift_users }}
+openshift_master_htpasswd_file=/etc/origin/master/openshift-passwords
 
 # OpenShift Network Vars
 openshift_master_dynamic_provisioning_enabled=true
-os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
-openshift_clock_enabled=true
+# os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
+os_sdn_network_plugin_name='redhat/openshift-ovs-subnet'
 
 # OpenShift Gluster CNS Vars
 openshift_storage_glusterfs_wipe=true
@@ -91,44 +125,18 @@ openshift_registry_selector='node-role.kubernetes.io/infra=true'
 openshift_hosted_router_replicas=3
 openshift_router_selector='node-role.kubernetes.io/infra=true'
 
-# OpenShift Metrics and Agregated Logging Vars
-openshift_metrics_install_metrics=true
-openshift_metrics_duration=7
-openshift_metrics_cassandra_pvc_size=25Gi
-openshift_metrics_cassandra_storage_type=dynamic
-openshift_metrics_cassandra_pvc_storage_class_name=glusterfs-storage-block
-openshift_metrics_hawkular_hostname=metrics.{{ openshift_cloudapps_url }}
-openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra":"true"}
-
-openshift_logging_install_logging=true
-openshift_logging_curator_default_days=7
-openshift_logging_es_pvc_size=25Gi
-openshift_logging_es_pvc_storage_class_name=glusterfs-storage-block
-openshift_logging_kibana_hostname=logging.{{ openshift_cloudapps_url }}
-openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra":"true"}
-
 # OpenShift Service Catalog Vars
 openshift_enable_service_catalog=true
-ansible_service_broker_install=true
+
 template_service_broker_install=true
+openshift_template_service_broker_namespaces=['openshift']
 template_service_broker_selector={"node-role.kubernetes.io/infra":"true"}
 
-## Add Prometheus Metrics:
-openshift_hosted_prometheus_deploy=true
-openshift_prometheus_node_selector={"node-role.kubernetes.io/infra":"true"}
+ansible_service_broker_install=true
+ansible_service_broker_local_registry_whitelist=['.*-apb$']
 
-## Management: CloudForms
-openshift_management_install_management=true 
-openshift_management_app_template=cfme-template 
-openshift_management_storage_class=preconfigured
-
-oreg_url=registry.access.redhat.com/openshift3/ose-${component}:${version}
-openshift_storage_glusterfs_heketi_image=registry.access.redhat.com/rhgs3/rhgs-volmanager-rhel7
-openshift_storage_glusterfs_image=registry.access.redhat.com/rhgs3/rhgs-server-rhel7
-openshift_storage_glusterfs_block_image=registry.access.redhat.com/rhgs3/rhgs-gluster-block-prov-rhel7
-openshift_storage_glusterfs_s3_image=registry.access.redhat.com/rhgs3/rhgs-gluster-s3-server-rhel7
+openshift_storage_glusterfs_heketi_image=registry.redhat.io/rhgs3/rhgs-volmanager-rhel7
+openshift_storage_glusterfs_image=registry.redhat.io/rhgs3/rhgs-server-rhel7
+openshift_storage_glusterfs_block_image=registry.redhat.io/rhgs3/rhgs-gluster-block-prov-rhel7
+openshift_storage_glusterfs_s3_image=registry.redhat.io/rhgs3/rhgs-gluster-s3-server-rhel7
 
