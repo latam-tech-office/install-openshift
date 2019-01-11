@@ -1,4 +1,4 @@
-# Installation of OpenShift on Microsoft Azure
+# Red Hat Openshift installation on Microsoft Azure
 
 * Requirements
 * Troubleshooting
